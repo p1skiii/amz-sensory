@@ -1,0 +1,42 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Aspect from "@/components/ui/Aspect.astro";
+import type { Locale } from "@/data/locales";
+
+type Props = {
+  coffee: CollectionEntry<"coffees">;
+  locale: Locale;
+};
+
+const { coffee, locale } = Astro.props as Props;
+
+const href = `/${locale}/coffee/${coffee.data.slug}/`;
+const title = coffee.data.title[locale];
+const tasting = coffee.data.tasting[locale].slice(0, 3).join(" · ");
+const price = `HK$${coffee.data.priceHkd} / 100g`;
+---
+
+<article class="group">
+  <a href={href} class="block">
+    <div class="rounded-[var(--radius)] border border-transparent transition duration-150 ease-editorial group-hover:border-border/15">
+      <Aspect>
+        <img
+          src={coffee.data.cover}
+          alt={title}
+          class="h-full w-full object-cover transition duration-300 ease-editorial group-hover:scale-[1.02]"
+          loading="lazy"
+        />
+      </Aspect>
+    </div>
+
+    <div class="mt-4">
+      <h3 class="font-serif text-xl tracking-[-0.01em]">{title}</h3>
+      <p class="mt-1 text-xs tracking-[0.12em] text-muted uppercase">
+        {price}
+      </p>
+      <p class="mt-3 text-sm text-text/85">
+        {tasting}
+      </p>
+    </div>
+  </a>
+</article>

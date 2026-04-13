@@ -1,0 +1,33 @@
+<svg width="960" height="420" viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AMZ Sensory logo">
+  <defs>
+    <style>
+      .ink { fill: #111111; }
+      .line { fill: none; stroke: #111111; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .sub {
+        fill: #111111;
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        font-size: 28px;
+        font-weight: 400;
+        letter-spacing: 0.42em;
+      }
+    </style>
+  </defs>
+
+  <!-- Monogram -->
+  <g transform="translate(230 78)">
+    <!-- A -->
+    <path class="ink" d="M0 180L78 0H108L76 0L162 180H126L104 132H52L31 180H0ZM63 104H94L78 59L63 104Z"></path>
+
+    <!-- M -->
+    <path class="ink" d="M200 180V0H232L282 96L333 0H365V180H330V69L286 152H278L235 70V180H200Z"></path>
+
+    <!-- Z -->
+    <path class="ink" d="M420 0H567V28L472 152H571V180H416V151L511 28H420V0Z"></path>
+
+    <!-- subtle sensory line -->
+    <path class="line" d="M-8 158C52 214,124 213,186 174C225 149,255 132,292 130C336 128,376 146,414 164C464 188,513 197,570 144"></path>
+  </g>
+
+  <!-- Submark -->
+  <text x="480" y="360" text-anchor="middle" class="sub">SENSORY</text>
+</svg>

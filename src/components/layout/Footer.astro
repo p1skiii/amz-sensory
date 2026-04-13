@@ -1,0 +1,17 @@
+---
+import Container from "./Container.astro";
+---
+<footer class="border-t border-border/10 bg-surface">
+  <Container class="py-10 flex items-center justify-between text-xs text-muted">
+    <div class="flex items-center gap-3">
+      <img src="/brand/logo.svg" alt="AMZ Sensory" class="h-5 w-auto opacity-80" />
+      <span>© {new Date().getFullYear()} AMZ Sensory</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a class="hover:text-text transition duration-150 ease-editorial" href="mailto:hello@amzsensory.com">hello@amzsensory.com</a>
+      <button class="text-muted hover:text-text transition duration-150 ease-editorial" data-wechat-open>
+        WeChat / QR
+      </button>
+    </div>
+  </Container>
+</footer>

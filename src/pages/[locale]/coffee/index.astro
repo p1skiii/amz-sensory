@@ -1,0 +1,52 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/layout/Header.astro";
+import Footer from "@/components/layout/Footer.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import CoffeeCard from "@/components/coffee/CoffeeCard.astro";
+import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
+import { LOCALES, type Locale } from "@/data/locales";
+import { getAllCoffees } from "@/utils/getCoffees";
+
+export function getStaticPaths() {
+  return LOCALES.map(locale => ({ params: { locale } }));
+}
+
+const localeParam = Astro.params.locale;
+if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
+  throw new Error(`Invalid locale: ${localeParam}`);
+}
+
+const locale = localeParam as Locale;
+const path = Astro.url.pathname;
+const coffees = await getAllCoffees();
+
+const title = locale === "en" ? "Coffee" : "Coffee";
+const description =
+  locale === "en"
+    ? "Current AMZ Sensory releases with tasting notes."
+    : "AMZ Sensory 當前作品與風味資訊。";
+---
+
+<Layout locale={locale} title={`AMZ Sensory | ${title}`} description={description}>
+  <Header locale={locale} path={path} />
+
+  <Section>
+    <Container>
+      <div>
+        <p class="text-xs tracking-[0.18em] uppercase text-muted">Current Releases</p>
+        <h1 class="mt-3 font-serif text-4xl tracking-[-0.02em]">
+          {locale === "en" ? "Coffee Library" : "作品庫"}
+        </h1>
+      </div>
+
+      <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-16">
+        {coffees.map(coffee => <CoffeeCard coffee={coffee} locale={locale} />)}
+      </div>
+    </Container>
+  </Section>
+
+  <Footer />
+  <WeChatDrawer />
+</Layout>

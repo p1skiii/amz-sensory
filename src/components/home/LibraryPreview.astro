@@ -1,0 +1,30 @@
+---
+import Container from "../layout/Container.astro";
+import Section from "../layout/Section.astro";
+import CoffeeCard from "@/components/coffee/CoffeeCard.astro";
+import type { Locale } from "@/data/locales";
+import { getAllCoffees } from "@/utils/getCoffees";
+
+const { locale } = Astro.props as { locale: Locale };
+
+const coffees = (await getAllCoffees()).slice(0, 4);
+---
+<Section>
+  <Container>
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-xs tracking-[0.18em] uppercase text-muted">Current Releases</p>
+        <h2 class="mt-3 font-serif text-2xl tracking-[-0.01em]">
+          {locale === "en" ? "Library Preview" : "作品預覽"}
+        </h2>
+      </div>
+      <a href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"} class="text-xs text-text hover:underline underline-offset-4">
+        {locale === "en" ? "View all" : "全部"}
+      </a>
+    </div>
+
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-16">
+      {coffees.map(coffee => <CoffeeCard coffee={coffee} locale={locale} />)}
+    </div>
+  </Container>
+</Section>

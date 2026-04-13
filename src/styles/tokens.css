@@ -1,0 +1,14 @@
+:root {
+  /* Nordic cool white palette */
+  --bg: 247 247 245;
+  --surface: 255 255 255;
+  --text: 17 17 17;
+  --muted: 107 107 107;
+
+  /* Hairline emphasis */
+  --border: 17 17 17;
+  --accent: 17 17 17;
+
+  /* Rhythm */
+  --radius: 10px;
+}

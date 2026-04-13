@@ -1,0 +1,112 @@
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  .app-prose {
+    @apply prose prose-neutral max-w-none text-text;
+  }
+
+  .app-prose :where(h1, h2, h3, h4) {
+    @apply font-serif tracking-[-0.02em] text-text;
+  }
+
+  .app-prose h1 {
+    @apply mb-6 text-3xl leading-tight md:text-4xl;
+  }
+
+  .app-prose h2 {
+    @apply mb-5 text-2xl leading-snug md:text-3xl;
+  }
+
+  .app-prose h3 {
+    @apply mb-4 text-xl leading-snug md:text-2xl;
+  }
+
+  .app-prose h4 {
+    @apply mb-3 text-lg leading-snug;
+  }
+
+  .app-prose :where(p, strong, ol, ul, figcaption, table, code) {
+    @apply text-text/90;
+  }
+
+  .app-prose a {
+    @apply text-text decoration-border/50 underline underline-offset-4 transition duration-150 ease-editorial hover:text-text focus-visible:no-underline;
+  }
+
+  .app-prose ul {
+    @apply overflow-x-clip;
+  }
+
+  .app-prose li {
+    @apply marker:text-border/60;
+  }
+
+  .app-prose hr {
+    @apply my-10 border-0 border-t border-border/15;
+  }
+
+  .app-prose img {
+    @apply mx-auto rounded-[var(--radius)] border border-border/10;
+  }
+
+  .app-prose figcaption {
+    @apply mt-3 text-xs text-muted;
+  }
+
+  .app-prose table {
+    @apply border-collapse border-spacing-0;
+
+    th,
+    td {
+      @apply border border-border/15 px-3 py-2 align-top;
+    }
+
+    th {
+      @apply bg-surface text-left text-xs uppercase tracking-wide text-muted;
+    }
+  }
+
+  .app-prose code {
+    @apply rounded bg-border/10 px-1.5 py-0.5 text-sm text-text before:content-none after:content-none;
+  }
+
+  .app-prose pre {
+    @apply rounded-[var(--radius)] border border-border/15 bg-border/5 p-4 text-sm text-text/90 focus-visible:border-transparent focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 focus-visible:outline-dashed;
+  }
+
+  .app-prose .astro-code {
+    @apply flex border border-border/15 bg-(--shiki-light-bg) text-(--shiki-light) outline-none [&_span]:text-(--shiki-light);
+  }
+
+  html[data-theme="dark"] .app-prose .astro-code {
+    @apply bg-(--shiki-dark-bg) text-(--shiki-dark) [&_span]:text-(--shiki-dark);
+  }
+
+  .app-prose blockquote {
+    @apply border-s border-border/25 bg-border/5 px-4 py-2 text-text/90;
+  }
+
+  .app-prose details {
+    @apply inline-block cursor-pointer text-text select-none [&_p]:hidden [&_ul]:my-0!;
+  }
+
+  .app-prose summary {
+    @apply focus-visible:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent focus-visible:outline-dashed;
+  }
+
+  .app-prose .line.diff.add {
+    @apply relative inline-block w-full bg-green-500/10 before:absolute before:-left-3 before:text-green-600 before:content-['+'];
+  }
+
+  .app-prose .line.diff.remove {
+    @apply relative inline-block w-full bg-red-500/10 before:absolute before:-left-3 before:text-red-500 before:content-['-'];
+  }
+
+  .app-prose .line.highlighted {
+    @apply inline-block w-full bg-slate-400/20;
+  }
+
+  .app-prose .highlighted-word {
+    @apply rounded-sm border border-border/30 px-0.5 py-px;
+  }
+}

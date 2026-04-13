@@ -1,0 +1,39 @@
+---
+import Container from "../layout/Container.astro";
+import Section from "../layout/Section.astro";
+
+const { locale } = Astro.props;
+
+const content =
+  locale === "en"
+    ? {
+        title: "Not stronger. Clearer.",
+        lines: [
+          "Terroir sets the stage. Relationships prove it.",
+          "Sustainability is restraint, not a slogan.",
+          "Roasting keeps structure — and removes excess.",
+        ],
+        imageAlt: "Manifesto portrait",
+      }
+    : {
+        title: "我們的咖啡不是更濃，而是更清。",
+        lines: ["風土是前提，關係是證據。", "可持續不是口號，是一種節制。", "烘焙是把結構留住，把多餘移走。"],
+        imageAlt: "宣言",
+      };
+---
+<Section>
+  <Container class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+    <div class="space-y-4">
+      <p class="text-xs tracking-[0.18em] uppercase text-muted">Manifesto</p>
+      <h2 class="font-serif text-3xl tracking-[-0.02em] leading-tight">{content.title}</h2>
+      <div class="grid gap-3 text-sm text-text/90">
+        {content.lines.map(line => (
+          <p>{line}</p>
+        ))}
+      </div>
+    </div>
+    <div class="rounded-[var(--radius)] border border-border/10 overflow-hidden" style="aspect-ratio:4/5;">
+      <img src="/covers/manifesto-ultra-light.jpg" alt={content.imageAlt} class="h-full w-full object-cover" loading="lazy" />
+    </div>
+  </Container>
+</Section>

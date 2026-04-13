@@ -1,0 +1,81 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/layout/Header.astro";
+import Footer from "@/components/layout/Footer.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Divider from "@/components/layout/Divider.astro";
+import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
+import { LOCALES, type Locale } from "@/data/locales";
+import { getOriginPapers, getOriginPaperBySlug } from "@/utils/originPapers";
+
+export async function getStaticPaths() {
+  const papers = await getOriginPapers();
+  return LOCALES.flatMap(locale =>
+    papers.map(paper => ({
+      params: { locale, slug: paper.slug },
+    }))
+  );
+}
+
+const localeParam = Astro.params.locale;
+const slugParam = Astro.params.slug;
+
+if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
+  throw new Error(`Invalid locale: ${localeParam}`);
+}
+if (!slugParam) {
+  throw new Error("Missing origins slug");
+}
+
+const locale = localeParam as Locale;
+const path = Astro.url.pathname;
+const paper = await getOriginPaperBySlug(slugParam);
+
+if (!paper) {
+  throw new Error(`Unknown origins paper: ${slugParam}`);
+}
+
+const pageTitle = `${paper.title[locale]} | ${locale === "en" ? "Origins" : "產地"}`;
+const pageDescription = paper.summary[locale];
+---
+
+<Layout
+  locale={locale}
+  title={`AMZ Sensory | ${pageTitle}`}
+  description={pageDescription}
+>
+  <Header locale={locale} path={path} />
+
+  <Section>
+    <Container class="grid gap-8">
+      <div>
+        <a
+          href={`/${locale}/origins/`}
+          class="text-xs tracking-[0.12em] uppercase text-muted hover:text-text hover:underline underline-offset-4"
+        >
+          {locale === "en" ? "Back to Origins" : "返回產地"}
+        </a>
+        <p class="mt-6 text-xs tracking-[0.18em] uppercase text-muted">
+          {paper.subtitle}
+        </p>
+        <h1 class="mt-3 max-w-prose font-serif text-4xl tracking-[-0.02em]">
+          {paper.title[locale]}
+        </h1>
+      </div>
+
+      <Divider />
+
+      <article class="grid gap-5">
+        {paper.blocks.map(block => (
+          <p class="max-w-prose whitespace-pre-line text-[15px] leading-[1.9] text-text/92 md:text-[16px]">
+            {block}
+          </p>
+        ))}
+      </article>
+    </Container>
+  </Section>
+
+  <Footer />
+  <WeChatDrawer />
+</Layout>

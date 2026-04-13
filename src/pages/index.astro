@@ -1,0 +1,39 @@
+---
+import { DEFAULT_LOCALE } from "@/data/locales";
+
+const defaultPath = `/${DEFAULT_LOCALE}/`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={`https://amzsensory.com${defaultPath}`} />
+    <title>AMZ Sensory</title>
+    <noscript>
+      <meta http-equiv="refresh" content={`0; url=${defaultPath}`} />
+    </noscript>
+    <script is:inline>
+      (function () {
+        const zhPatterns = ["zh-hant", "zh-tw", "zh-hk", "zh"];
+        const locales = navigator.languages?.length
+          ? navigator.languages
+          : [navigator.language || ""];
+
+        const normalized = locales.map(locale => locale.toLowerCase());
+        const target = normalized.some(locale =>
+          zhPatterns.some(pattern => locale.startsWith(pattern))
+        )
+          ? "/zh-hant/"
+          : "/en/";
+
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    <a href={defaultPath}>Continue to AMZ Sensory</a>
+  </body>
+</html>

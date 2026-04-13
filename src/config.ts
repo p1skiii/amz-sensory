@@ -1,0 +1,23 @@
+export const SITE = {
+  website: "https://amzsensory.com",
+  author: "AMZ Sensory",
+  profile: "https://amzsensory.com",
+  desc: "Floral-first ultra-light roasting. Structured, layered, and clean finish.",
+  title: "AMZ Sensory",
+  ogImage: "covers/ultra-light.jpg",
+  lightAndDarkMode: true,
+  postPerIndex: 4,
+  postPerPage: 4,
+  scheduledPostMargin: 15 * 60 * 1000,
+  showArchives: false,
+  showBackButton: false,
+  editPost: {
+    enabled: false,
+    text: "",
+    url: "",
+  },
+  dynamicOgImage: false,
+  dir: "ltr",
+  lang: "zh-hant",
+  timezone: "Asia/Shanghai",
+} as const;

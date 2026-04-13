@@ -1,0 +1,7 @@
+---
+const { class: cls = "", tone = "default" } = Astro.props;
+const pad = tone === "tight" ? "py-16 md:py-20" : "py-24 md:py-32";
+---
+<section class={`${pad} ${cls}`}>
+  <slot />
+</section>

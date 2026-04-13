@@ -1,0 +1,23 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Container from "@/components/layout/Container.astro";
+---
+
+<Layout
+  locale="en"
+  title="AMZ Sensory | 404"
+  description="Page not found."
+  noindex={true}
+>
+  <main class="min-h-svh flex items-center">
+    <Container class="grid gap-6 py-20">
+      <p class="text-xs tracking-[0.18em] uppercase text-muted">404</p>
+      <h1 class="font-serif text-5xl tracking-[-0.02em]">Page Not Found</h1>
+      <p class="text-sm text-muted">The page is unavailable. Continue in your preferred language:</p>
+      <div class="flex items-center gap-6 text-sm">
+        <a href="/zh-hant/" class="hover:underline underline-offset-4">繁中首頁</a>
+        <a href="/en/" class="hover:underline underline-offset-4">English Home</a>
+      </div>
+    </Container>
+  </main>
+</Layout>

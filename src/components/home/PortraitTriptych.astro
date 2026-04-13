@@ -1,0 +1,73 @@
+---
+import Container from "../layout/Container.astro";
+import Section from "../layout/Section.astro";
+import Aspect from "../ui/Aspect.astro";
+
+const { locale } = Astro.props;
+
+const portraits =
+  locale === "en"
+    ? [
+        {
+          title: "Producer",
+          lines: ["He cares about ripeness and density.", "We buy only lots we truly understand."],
+          image: "/covers/ultra-light.jpg",
+          objectPosition: "50% 60%",
+        },
+        {
+          title: "Roasting",
+          lines: ["We care about temperature bands—not brute heat.", "Layers come from rhythm, not caramel weight."],
+          image: "/covers/layered.jpg",
+          objectPosition: "50% 56%",
+        },
+        {
+          title: "Cupping",
+          lines: ["Clarity is the judge.", "Florals and fruit arrive first, but must stand firm."],
+          image: "/covers/clean.jpg",
+          objectPosition: "50% 58%",
+        },
+      ]
+    : [
+        {
+          title: "Producer",
+          lines: ["他在意成熟度與密度。", "我們只買我們真正理解的批次。"],
+          image: "/covers/ultra-light.jpg",
+          objectPosition: "50% 60%",
+        },
+        {
+          title: "Roasting",
+          lines: ["我們在意溫區，而不是火力。", "層次靠節奏，不靠焦糖。"],
+          image: "/covers/layered.jpg",
+          objectPosition: "50% 56%",
+        },
+        {
+          title: "Cupping",
+          lines: ["我們用清晰度做裁判。", "花果先到，但必須站得穩。"],
+          image: "/covers/clean.jpg",
+          objectPosition: "50% 58%",
+        },
+      ];
+---
+<Section>
+  <Container class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
+    {portraits.map(item => (
+      <div class="grid gap-4">
+        <Aspect>
+          <img
+            src={item.image}
+            alt={item.title}
+            class="h-full w-full object-cover"
+            style={`object-position:${item.objectPosition};`}
+            loading="lazy"
+          />
+        </Aspect>
+        <div class="grid gap-2">
+          <p class="text-xs tracking-[0.18em] uppercase text-muted">{item.title}</p>
+          {item.lines.map(line => (
+            <p class="text-sm text-text/90">{line}</p>
+          ))}
+        </div>
+      </div>
+    ))}
+  </Container>
+</Section>

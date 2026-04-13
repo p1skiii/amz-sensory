@@ -1,0 +1,87 @@
+---
+import { QR_SRC, WECHAT_ID } from "./wechat";
+---
+<dialog
+  id="wechat-dialog"
+  data-wechat-id={WECHAT_ID}
+  class="backdrop:bg-text/15 p-0 w-full max-w-[420px] rounded-[var(--radius)] border border-border/15 bg-surface"
+>
+  <div class="p-6 md:p-8">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xs tracking-wide text-muted">WECHAT</p>
+        <h3 class="font-serif text-2xl leading-tight">Private Channel</h3>
+      </div>
+      <form method="dialog">
+        <button class="text-xs text-muted hover:text-text transition duration-150 ease-editorial">Close</button>
+      </form>
+    </div>
+
+    <div class="mt-6 grid gap-6">
+      <div class="border border-border/10 rounded-[var(--radius)] p-4">
+        <img
+          src={QR_SRC}
+          alt="WeChat QR"
+          class="w-full h-auto"
+          loading="lazy"
+          data-wechat-qr
+        />
+        <p class="hidden mt-3 text-xs text-muted" data-wechat-qr-fallback>
+          QR image unavailable. Use WeChat ID below.
+        </p>
+      </div>
+
+      <div class="grid gap-2">
+        <p class="text-xs text-muted">WeChat ID</p>
+        <div class="flex items-center justify-between gap-3 border border-border/10 rounded-[var(--radius)] px-4 py-3">
+          <code class="text-sm text-text">{WECHAT_ID}</code>
+          <button class="text-xs text-text hover:underline underline-offset-4" data-copy-wechat type="button">
+            Copy
+          </button>
+        </div>
+        <p class="text-xs text-muted">Screenshot this page and message us.</p>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>("#wechat-dialog");
+  const wechatId = dialog?.dataset.wechatId ?? "AMZ_SENSORY";
+
+  if (dialog) {
+    document.querySelectorAll("[data-wechat-open]").forEach(el => {
+      el.addEventListener("click", () => dialog.showModal());
+    });
+
+    dialog.addEventListener("click", e => {
+      const rect = dialog.getBoundingClientRect();
+      const x = "clientX" in e ? e.clientX : 0;
+      const y = "clientY" in e ? e.clientY : 0;
+      const inside =
+        rect.top <= y &&
+        y <= rect.top + rect.height &&
+        rect.left <= x &&
+        x <= rect.left + rect.width;
+      if (!inside) dialog.close();
+    });
+
+    const qrImage = dialog.querySelector<HTMLImageElement>("[data-wechat-qr]");
+    const fallback = dialog.querySelector<HTMLElement>("[data-wechat-qr-fallback]");
+    qrImage?.addEventListener("error", () => {
+      fallback?.classList.remove("hidden");
+    });
+  }
+
+  const btn = dialog?.querySelector("[data-copy-wechat]");
+  btn?.addEventListener("click", async () => {
+    if (!(btn instanceof HTMLButtonElement)) return;
+    try {
+      await navigator.clipboard.writeText(wechatId);
+      btn.textContent = "Copied";
+      setTimeout(() => (btn.textContent = "Copy"), 900);
+    } catch {
+      btn.textContent = wechatId;
+    }
+  });
+</script>

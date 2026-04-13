@@ -1,0 +1,121 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/layout/Header.astro";
+import Footer from "@/components/layout/Footer.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Divider from "@/components/layout/Divider.astro";
+import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
+import { LOCALES, type Locale } from "@/data/locales";
+import { getMethodPapers } from "@/utils/methodPapers";
+import { getOriginPapers } from "@/utils/originPapers";
+import { getResponsibilityPapers } from "@/utils/responsibilityPapers";
+import { getPhilosophyPapers } from "@/utils/philosophyPapers";
+import {
+  STATIC_PAGE_KEYS,
+  STATIC_PAGE_CONTENT,
+  isStaticPageKey,
+  type StaticPageKey,
+} from "@/data/sitePages";
+
+export function getStaticPaths() {
+  return LOCALES.flatMap(locale =>
+    STATIC_PAGE_KEYS.map(page => ({
+      params: { locale, page },
+    }))
+  );
+}
+
+const localeParam = Astro.params.locale;
+const pageParam = Astro.params.page;
+
+if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
+  throw new Error(`Invalid locale: ${localeParam}`);
+}
+if (!isStaticPageKey(pageParam)) {
+  throw new Error(`Invalid page: ${pageParam}`);
+}
+
+const locale = localeParam as Locale;
+const page = pageParam as StaticPageKey;
+const copy = STATIC_PAGE_CONTENT[page][locale];
+const path = Astro.url.pathname;
+const methodPapers = page === "method" ? await getMethodPapers() : [];
+const originPapers = page === "origins" ? await getOriginPapers() : [];
+const responsibilityPapers = page === "responsibility" ? await getResponsibilityPapers() : [];
+const philosophyPapers = page === "philosophy" ? await getPhilosophyPapers() : [];
+---
+
+<Layout
+  locale={locale}
+  title={`AMZ Sensory | ${copy.title}`}
+  description={copy.description}
+>
+  <Header locale={locale} path={path} />
+
+  <Section>
+    <Container class="grid gap-8">
+      <div>
+        <p class="text-xs tracking-[0.18em] uppercase text-muted">{copy.eyebrow}</p>
+        <h1 class="mt-3 font-serif text-4xl tracking-[-0.02em]">{copy.title}</h1>
+        <p class="mt-5 max-w-prose text-sm text-text/90">{copy.lead}</p>
+      </div>
+
+      <Divider />
+
+      {
+        page === "method" ||
+        page === "origins" ||
+        page === "responsibility" ||
+        page === "philosophy" ? (
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            {(page === "method"
+              ? methodPapers
+              : page === "origins"
+                ? originPapers
+                : page === "responsibility"
+                  ? responsibilityPapers
+                  : philosophyPapers).map((paper, index) => {
+              const block = copy.blocks[index];
+              const subtitle =
+                typeof paper.subtitle === "string"
+                  ? paper.subtitle
+                  : paper.subtitle[locale];
+              return (
+                <a
+                  href={`/${locale}/${page}/${paper.slug}/`}
+                  class="group rounded-[var(--radius)] border border-border/10 bg-surface p-5 transition duration-150 ease-editorial hover:border-border/25"
+                >
+                  <p class="text-xs tracking-[0.16em] uppercase text-muted">
+                    {block?.heading ?? subtitle}
+                  </p>
+                  <h2 class="mt-3 font-serif text-xl tracking-[-0.01em] text-text/95">
+                    {paper.title[locale]}
+                  </h2>
+                  <p class="mt-3 text-sm text-muted">
+                    {block?.body ?? paper.summary[locale]}
+                  </p>
+                  <p class="mt-5 text-xs tracking-[0.12em] uppercase text-text/90 group-hover:underline underline-offset-4">
+                    {locale === "en" ? "Read Article" : "閱讀文章"}
+                  </p>
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            {copy.blocks.map(block => (
+              <article class="grid gap-3">
+                <h2 class="font-serif text-xl tracking-[-0.01em]">{block.heading}</h2>
+                <p class="text-sm text-muted">{block.body}</p>
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </Container>
+  </Section>
+
+  <Footer />
+  <WeChatDrawer />
+</Layout>

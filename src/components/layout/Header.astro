@@ -1,0 +1,283 @@
+---
+import LangSwitch from "./LangSwitch.astro";
+import type { Locale } from "@/data/locales";
+import { NAV_ITEMS } from "@/data/sitePages";
+
+const { locale, path } = Astro.props as { locale: Locale; path: string };
+
+const nav = NAV_ITEMS[locale];
+const methodIndex =
+  locale === "en"
+    ? [
+        { label: "Temperature Bands", href: "/en/method/temperature-bands/" },
+        { label: "Development Control", href: "/en/method/development-control/" },
+        { label: "Extraction Readiness", href: "/en/method/extraction-readiness/" },
+      ]
+    : [
+        {
+          label: "溫區分層",
+          href: "/zh-hant/method/temperature-bands/",
+        },
+        {
+          label: "發展控制",
+          href: "/zh-hant/method/development-control/",
+        },
+        {
+          label: "萃取準備度",
+          href: "/zh-hant/method/extraction-readiness/",
+        },
+      ];
+const originsIndex =
+  locale === "en"
+    ? [
+        { label: "Traceability", href: "/en/origins/traceability/" },
+        {
+          label: "Long-Term Relationships",
+          href: "/en/origins/long-term-relationships/",
+        },
+        { label: "Verifiable Language", href: "/en/origins/verifiable-language/" },
+      ]
+    : [
+        { label: "可追溯性", href: "/zh-hant/origins/traceability/" },
+        {
+          label: "長期合作關係",
+          href: "/zh-hant/origins/long-term-relationships/",
+        },
+        { label: "可驗證語言", href: "/zh-hant/origins/verifiable-language/" },
+      ];
+const responsibilityIndex =
+  locale === "en"
+    ? [
+        { label: "Packaging", href: "/en/responsibility/packaging-discipline/" },
+        { label: "Buying", href: "/en/responsibility/buying-discipline/" },
+        { label: "Waste", href: "/en/responsibility/waste-control/" },
+      ]
+    : [
+        { label: "包裝策略", href: "/zh-hant/responsibility/packaging-discipline/" },
+        { label: "採購紀律", href: "/zh-hant/responsibility/buying-discipline/" },
+        { label: "減廢節奏", href: "/zh-hant/responsibility/waste-control/" },
+      ];
+const philosophyIndex =
+  locale === "en"
+    ? [
+        { label: "Aesthetic First", href: "/en/philosophy/aesthetic-first/" },
+        { label: "Proof Over Claims", href: "/en/philosophy/proof-over-claims/" },
+        { label: "Restraint", href: "/en/philosophy/restraint/" },
+      ]
+    : [
+        { label: "審美先行", href: "/zh-hant/philosophy/aesthetic-first/" },
+        { label: "證據優先", href: "/zh-hant/philosophy/proof-over-claims/" },
+        { label: "節制", href: "/zh-hant/philosophy/restraint/" },
+      ];
+---
+<header class="sticky top-0 z-50 w-full border-b border-border/10 bg-surface/90 backdrop-blur">
+  <div class="border-b border-border/10 bg-surface/95">
+    <div class="mx-auto flex h-8 w-full max-w-[1280px] items-center justify-center px-4 text-[12px] tracking-[0.16em] uppercase text-muted sm:px-6 lg:px-8">
+      Floral First · Ultra Light · Structure / Light / Clean
+    </div>
+  </div>
+
+  <div class="mx-auto grid h-[72px] w-full max-w-[1280px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 lg:px-8">
+    <nav class="hidden w-full items-center justify-start gap-5 justify-self-start text-sm text-text/90 md:flex">
+      {nav.map(item => {
+        const isActive = path.startsWith(item.href);
+        const isMethodRoot = item.href.endsWith("/method/");
+        const isOriginsRoot = item.href.endsWith("/origins/");
+        const isResponsibilityRoot = item.href.endsWith("/responsibility/");
+        const isPhilosophyRoot = item.href.endsWith("/philosophy/");
+
+        if (isMethodRoot) {
+          return (
+            <div class="group/method relative">
+              <a
+                class:list={[
+                  "inline-flex items-center gap-1 transition duration-150 ease-editorial hover:underline underline-offset-6",
+                  isActive && "active-nav",
+                ]}
+                href={item.href}
+              >
+                {item.label}
+                <svg
+                  viewBox="0 0 10 6"
+                  aria-hidden="true"
+                  class="h-[10px] w-[10px] text-muted transition duration-150 group-hover/method:text-text"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M9.354.646a.5.5 0 00-.708 0L5 4.293 1.354.646a.5.5 0 00-.708.708l4 4a.5.5 0 00.708 0l4-4a.5.5 0 000-.708z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </a>
+
+              <div class="pointer-events-none invisible absolute left-0 top-full z-40 pt-4 opacity-0 transition duration-150 ease-editorial group-hover/method:pointer-events-auto group-hover/method:visible group-hover/method:opacity-100 group-focus-within/method:pointer-events-auto group-focus-within/method:visible group-focus-within/method:opacity-100">
+                <div class="min-w-[360px] border border-border/15 bg-white p-6">
+                  <div class="grid gap-4">
+                    {methodIndex.map(link => (
+                      <a
+                        href={link.href}
+                        class="text-[15px] text-text/90 transition duration-150 ease-editorial hover:text-text"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (isOriginsRoot) {
+          return (
+            <div class="group/origins relative">
+              <a
+                class:list={[
+                  "inline-flex items-center gap-1 transition duration-150 ease-editorial hover:underline underline-offset-6",
+                  isActive && "active-nav",
+                ]}
+                href={item.href}
+              >
+                {item.label}
+                <svg
+                  viewBox="0 0 10 6"
+                  aria-hidden="true"
+                  class="h-[10px] w-[10px] text-muted transition duration-150 group-hover/origins:text-text"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M9.354.646a.5.5 0 00-.708 0L5 4.293 1.354.646a.5.5 0 00-.708.708l4 4a.5.5 0 00.708 0l4-4a.5.5 0 000-.708z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </a>
+
+              <div class="pointer-events-none invisible absolute left-0 top-full z-40 pt-4 opacity-0 transition duration-150 ease-editorial group-hover/origins:pointer-events-auto group-hover/origins:visible group-hover/origins:opacity-100 group-focus-within/origins:pointer-events-auto group-focus-within/origins:visible group-focus-within/origins:opacity-100">
+                <div class="min-w-[360px] border border-border/15 bg-white p-6">
+                  <div class="grid gap-4">
+                    {originsIndex.map(link => (
+                      <a
+                        href={link.href}
+                        class="text-[15px] text-text/90 transition duration-150 ease-editorial hover:text-text"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (isResponsibilityRoot) {
+          return (
+            <div class="group/responsibility relative">
+              <a
+                class:list={[
+                  "inline-flex items-center gap-1 transition duration-150 ease-editorial hover:underline underline-offset-6",
+                  isActive && "active-nav",
+                ]}
+                href={item.href}
+              >
+                {item.label}
+                <svg
+                  viewBox="0 0 10 6"
+                  aria-hidden="true"
+                  class="h-[10px] w-[10px] text-muted transition duration-150 group-hover/responsibility:text-text"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M9.354.646a.5.5 0 00-.708 0L5 4.293 1.354.646a.5.5 0 00-.708.708l4 4a.5.5 0 00.708 0l4-4a.5.5 0 000-.708z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </a>
+
+              <div class="pointer-events-none invisible absolute left-0 top-full z-40 pt-4 opacity-0 transition duration-150 ease-editorial group-hover/responsibility:pointer-events-auto group-hover/responsibility:visible group-hover/responsibility:opacity-100 group-focus-within/responsibility:pointer-events-auto group-focus-within/responsibility:visible group-focus-within/responsibility:opacity-100">
+                <div class="min-w-[360px] border border-border/15 bg-white p-6">
+                  <div class="grid gap-4">
+                    {responsibilityIndex.map(link => (
+                      <a
+                        href={link.href}
+                        class="text-[15px] text-text/90 transition duration-150 ease-editorial hover:text-text"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (isPhilosophyRoot) {
+          return (
+            <div class="group/philosophy relative">
+              <a
+                class:list={[
+                  "inline-flex items-center gap-1 transition duration-150 ease-editorial hover:underline underline-offset-6",
+                  isActive && "active-nav",
+                ]}
+                href={item.href}
+              >
+                {item.label}
+                <svg
+                  viewBox="0 0 10 6"
+                  aria-hidden="true"
+                  class="h-[10px] w-[10px] text-muted transition duration-150 group-hover/philosophy:text-text"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M9.354.646a.5.5 0 00-.708 0L5 4.293 1.354.646a.5.5 0 00-.708.708l4 4a.5.5 0 00.708 0l4-4a.5.5 0 000-.708z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </a>
+
+              <div class="pointer-events-none invisible absolute left-0 top-full z-40 pt-4 opacity-0 transition duration-150 ease-editorial group-hover/philosophy:pointer-events-auto group-hover/philosophy:visible group-hover/philosophy:opacity-100 group-focus-within/philosophy:pointer-events-auto group-focus-within/philosophy:visible group-focus-within/philosophy:opacity-100">
+                <div class="min-w-[360px] border border-border/15 bg-white p-6">
+                  <div class="grid gap-4">
+                    {philosophyIndex.map(link => (
+                      <a
+                        href={link.href}
+                        class="text-[15px] text-text/90 transition duration-150 ease-editorial hover:text-text"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <a
+            class:list={[
+              "transition duration-150 ease-editorial hover:underline underline-offset-6",
+              isActive && "active-nav",
+            ]}
+            href={item.href}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </nav>
+
+    <a href={locale === "en" ? "/en/" : "/zh-hant/"} class="flex items-center justify-center">
+      <img src="/brand/logo.svg" alt="AMZ Sensory" class="h-8 w-auto" />
+    </a>
+
+    <div class="flex w-full items-center justify-end justify-self-end gap-5">
+      <LangSwitch locale={locale} path={path} />
+    </div>
+  </div>
+</header>

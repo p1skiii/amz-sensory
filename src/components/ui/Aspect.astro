@@ -1,0 +1,6 @@
+---
+const { ratio = "4/5", class: cls = "" } = Astro.props;
+---
+<div class={`relative w-full overflow-hidden rounded-[var(--radius)] ${cls}`} style={`aspect-ratio:${ratio};`}>
+  <slot />
+</div>

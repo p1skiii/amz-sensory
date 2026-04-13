@@ -1,0 +1,58 @@
+---
+import Container from "../layout/Container.astro";
+
+const { locale } = Astro.props;
+
+const copy = locale === "en"
+  ? {
+      h1: "Ultra Light",
+      sub: "High Clarity · Layered · Clean Finish",
+      line: "We treat florals as structure — not as a gimmick.",
+      ctaLibrary: "View Library",
+      ctaPhilosophy: "Read Philosophy",
+    }
+  : {
+      h1: "Ultra Light",
+      sub: "高亮度｜多層次｜乾淨收尾",
+      line: "我們把花香當作結構，而不是噱頭。",
+      ctaLibrary: "瀏覽作品",
+      ctaPhilosophy: "閱讀理念",
+    };
+
+const heroCover = "/covers/home-hero.jpg";
+---
+<section class="relative overflow-hidden">
+  <div class="min-h-[min(88vh,820px)]">
+    <div class="absolute inset-0">
+      <img src={heroCover} alt="" class="h-full w-full object-cover" loading="lazy" />
+      <div class="absolute inset-0 bg-black/15"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+    </div>
+
+    <Container class="relative min-h-[min(88vh,820px)] flex items-end">
+      <div class="pb-16 md:pb-20 lg:pb-24 max-w-[620px]">
+        <p class="text-xs tracking-[0.18em] text-white/85 uppercase">AMZ Sensory</p>
+        <h1 class="mt-5 font-serif text-[42px] leading-[1.03] md:text-[62px] md:leading-[1] tracking-[-0.025em] text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]">
+          {copy.h1}
+        </h1>
+        <p class="mt-5 text-xs tracking-[0.16em] text-white/80 uppercase">{copy.sub}</p>
+        <p class="mt-7 max-w-[46ch] text-[15px] leading-[1.9] text-white/92 [text-wrap:balance]">{copy.line}</p>
+
+        <div class="mt-14 border-t border-white/35 pt-7 flex items-center gap-7">
+          <a
+            href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"}
+            class="font-serif text-[13px] tracking-[0.13em] text-white/95 uppercase hover:text-white hover:underline underline-offset-4"
+          >
+            {copy.ctaLibrary}
+          </a>
+          <a
+            href={locale === "en" ? "/en/philosophy/" : "/zh-hant/philosophy/"}
+            class="font-serif text-[13px] tracking-[0.13em] text-white/95 uppercase hover:text-white hover:underline underline-offset-4"
+          >
+            {copy.ctaPhilosophy}
+          </a>
+        </div>
+      </div>
+    </Container>
+  </div>
+</section>
