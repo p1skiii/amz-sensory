@@ -81,7 +81,10 @@ const coffeeSearchPlaceholder =
   locale === "en" ? "Search coffee" : "搜尋作品";
 const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
 ---
-<header class="sticky top-0 z-50 w-full border-b border-border/10 bg-surface/90 backdrop-blur">
+<header
+  data-header-root
+  class="sticky top-0 z-50 w-full border-b border-border/10 bg-surface/90 backdrop-blur"
+>
   <div class="border-b border-border/10 bg-surface/95">
     <div class="mx-auto flex h-8 w-full max-w-[1280px] items-center justify-center px-3 sm:px-6 lg:px-8">
       <p class="w-full truncate text-center text-[10px] leading-none tracking-[0.14em] text-muted uppercase sm:text-[12px] sm:tracking-[0.16em]">
@@ -369,8 +372,8 @@ const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
   </div>
 
   <dialog
-    id="mobile-nav-dialog"
-    class="m-0 h-full w-full max-w-none border-0 bg-surface/95 p-0 text-text backdrop:bg-text/35 md:hidden"
+    data-mobile-nav-dialog
+    class="fixed inset-0 z-[95] m-0 h-full w-full max-w-none border-0 bg-bg p-0 text-text backdrop:bg-text/35 md:hidden"
   >
     <div class="mx-auto grid h-full w-full max-w-[1280px] grid-rows-[auto_1fr] px-4 sm:px-6">
       <div class="flex h-[64px] items-center justify-between border-b border-border/10">
@@ -456,20 +459,26 @@ const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
     };
 
     const setupHeader = (): boolean => {
+      const roots = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-header-root]")
+      );
+      const root = roots.length > 0 ? roots[roots.length - 1] : null;
       const mobileDialog =
-        document.querySelector<HTMLDialogElement>("#mobile-nav-dialog");
+        root?.querySelector<HTMLDialogElement>("[data-mobile-nav-dialog]") ??
+        null;
       const openButton =
-        document.querySelector<HTMLElement>("[data-mobile-nav-open]");
+        root?.querySelector<HTMLElement>("[data-mobile-nav-open]") ?? null;
       const closeButton =
         mobileDialog?.querySelector<HTMLElement>("[data-mobile-nav-close]");
 
-      if (!mobileDialog || !openButton || !closeButton) {
+      if (!root || !mobileDialog || !openButton || !closeButton) {
         bindCartCountBadges();
         return false;
       }
 
       const win = window as HeaderWindow;
       win.__amzHeaderCleanup?.();
+      mobileDialog.style.backgroundColor = "rgb(var(--bg))";
 
       const closeDialog = () => {
         if (!mobileDialog.open) return;
@@ -478,6 +487,7 @@ const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
       };
 
       const handleOpen = () => {
+        if (mobileDialog.open) return;
         mobileDialog.showModal();
         document.body.style.overflow = "hidden";
       };
@@ -500,7 +510,7 @@ const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
       };
 
       const searchInputs = Array.from(
-        document.querySelectorAll<HTMLInputElement>("[data-global-coffee-search]")
+        root.querySelectorAll<HTMLInputElement>("[data-global-coffee-search]")
       );
       const activeLocale = document.documentElement.lang
         .toLowerCase()
@@ -509,11 +519,9 @@ const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
         : "zh-hant";
       const searchBasePath = `/${activeLocale}/coffee/`;
       const queryFromUrl = new URL(window.location.href).searchParams.get("q") ?? "";
-      if (queryFromUrl.length > 0) {
-        searchInputs.forEach(input => {
-          input.value = queryFromUrl;
-        });
-      }
+      searchInputs.forEach(input => {
+        input.value = queryFromUrl;
+      });
 
       const handleSearchInput = (event: Event) => {
         const source = event.currentTarget as HTMLInputElement;
