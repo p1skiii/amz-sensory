@@ -9,9 +9,7 @@ import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
 import { LOCALES, type Locale } from "@/data/locales";
 import { getAllCoffees } from "@/utils/getCoffees";
 
-export function getStaticPaths() {
-  return LOCALES.map(locale => ({ params: { locale } }));
-}
+export const prerender = false;
 
 const localeParam = Astro.params.locale;
 if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
@@ -34,11 +32,22 @@ const description =
 
   <Section>
     <Container>
-      <div>
-        <p class="text-xs tracking-[0.18em] uppercase text-muted">Current Releases</p>
-        <h1 class="mt-3 font-serif text-4xl tracking-[-0.02em]">
-          {locale === "en" ? "Coffee Library" : "作品庫"}
-        </h1>
+      <div class="flex flex-wrap items-end justify-between gap-5">
+        <div>
+          <p class="text-xs tracking-[0.18em] uppercase text-muted">Current Releases</p>
+          <h1 class="mt-3 font-serif text-4xl tracking-[-0.02em]">
+            {locale === "en" ? "Coffee Library" : "作品庫"}
+          </h1>
+        </div>
+
+        <a
+          href={`/${locale}/cart/`}
+          class="inline-flex items-center gap-2 border border-border/20 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/40"
+        >
+          {locale === "en" ? "Cart" : "購物車"}
+          <span class="text-muted">(<span data-cart-count>0</span>)</span>
+          <span class="text-muted">· HK$<span data-cart-subtotal>0</span></span>
+        </a>
       </div>
 
       <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-16">
@@ -49,4 +58,25 @@ const description =
 
   <Footer />
   <WeChatDrawer />
+
+  <script>
+    import {
+      bindCartAddButtons,
+      bindCartCountBadges,
+      getCartSubtotal,
+      readCart,
+    } from "@/scripts/cart";
+
+    const renderSubtotal = () => {
+      const subtotal = getCartSubtotal(readCart());
+      document.querySelectorAll<HTMLElement>("[data-cart-subtotal]").forEach(node => {
+        node.textContent = String(subtotal);
+      });
+    };
+
+    bindCartAddButtons();
+    bindCartCountBadges();
+    renderSubtotal();
+    window.addEventListener("amz-cart:changed", renderSubtotal);
+  </script>
 </Layout>

@@ -1,5 +1,9 @@
 ---
-slug: ultra-light-01
+stable_key: ethiopia-guji-01
+slug: ethiopia-guji-01
+legacy_slugs:
+  - ultra-light-01
+status: published
 order: 1
 title:
   en: Ethiopia • Guji • Washed

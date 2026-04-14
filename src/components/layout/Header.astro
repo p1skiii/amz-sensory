@@ -69,6 +69,14 @@ const philosophyIndex =
         { label: "證據優先", href: "/zh-hant/philosophy/proof-over-claims/" },
         { label: "節制", href: "/zh-hant/philosophy/restraint/" },
       ];
+
+const sectionIndexes: Record<string, { label: string; href: string }[]> = {
+  [locale === "en" ? "/en/method/" : "/zh-hant/method/"]: methodIndex,
+  [locale === "en" ? "/en/origins/" : "/zh-hant/origins/"]: originsIndex,
+  [locale === "en" ? "/en/responsibility/" : "/zh-hant/responsibility/"]:
+    responsibilityIndex,
+  [locale === "en" ? "/en/philosophy/" : "/zh-hant/philosophy/"]: philosophyIndex,
+};
 ---
 <header class="sticky top-0 z-50 w-full border-b border-border/10 bg-surface/90 backdrop-blur">
   <div class="border-b border-border/10 bg-surface/95">
@@ -77,7 +85,30 @@ const philosophyIndex =
     </div>
   </div>
 
-  <div class="mx-auto grid h-[72px] w-full max-w-[1280px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto flex h-[64px] w-full max-w-[1280px] items-center justify-between px-4 sm:px-6 md:hidden">
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center border border-border/20 text-text"
+      aria-label={locale === "en" ? "Open menu" : "開啟選單"}
+      data-mobile-nav-open
+    >
+      <span class="text-lg leading-none">≡</span>
+    </button>
+
+    <a href={locale === "en" ? "/en/" : "/zh-hant/"} class="flex items-center justify-center">
+      <img src="/brand/logo.svg" alt="AMZ Sensory" class="h-7 w-auto" />
+    </a>
+
+    <a
+      href={`/${locale}/cart/`}
+      class="inline-flex items-center gap-1 text-xs tracking-[0.12em] uppercase text-text"
+    >
+      {locale === "en" ? "Cart" : "購物車"}
+      <span class="text-muted">(<span data-cart-count>0</span>)</span>
+    </a>
+  </div>
+
+  <div class="mx-auto hidden h-[72px] w-full max-w-[1280px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 md:grid lg:px-8">
     <nav class="hidden w-full items-center justify-start gap-5 justify-self-start text-sm text-text/90 md:flex">
       {nav.map(item => {
         const isActive = path.startsWith(item.href);
@@ -278,6 +309,105 @@ const philosophyIndex =
 
     <div class="flex w-full items-center justify-end justify-self-end gap-5">
       <LangSwitch locale={locale} path={path} />
+      <a
+        href={`/${locale}/cart/`}
+        class="text-xs tracking-[0.12em] uppercase text-text hover:underline underline-offset-4"
+      >
+        {locale === "en" ? "Cart" : "購物車"} (<span data-cart-count>0</span>)
+      </a>
     </div>
   </div>
+
+  <dialog
+    id="mobile-nav-dialog"
+    class="m-0 h-full w-full max-w-none border-0 bg-surface/95 p-0 text-text backdrop:bg-text/35 md:hidden"
+  >
+    <div class="mx-auto grid h-full w-full max-w-[1280px] grid-rows-[auto_1fr] px-4 sm:px-6">
+      <div class="flex h-[64px] items-center justify-between border-b border-border/10">
+        <a href={locale === "en" ? "/en/" : "/zh-hant/"} class="flex items-center justify-center">
+          <img src="/brand/logo.svg" alt="AMZ Sensory" class="h-7 w-auto" />
+        </a>
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center border border-border/20 text-text"
+          aria-label={locale === "en" ? "Close menu" : "關閉選單"}
+          data-mobile-nav-close
+        >
+          <span class="text-lg leading-none">×</span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto py-6">
+        <div class="grid gap-6">
+          {nav.map(item => {
+            const isActive = path.startsWith(item.href);
+            const children = sectionIndexes[item.href] ?? [];
+            return (
+              <div class="grid gap-3">
+                <a
+                  href={item.href}
+                  class:list={[
+                    "text-xl font-serif tracking-[-0.01em]",
+                    isActive ? "underline underline-offset-8" : "hover:underline underline-offset-8",
+                  ]}
+                >
+                  {item.label}
+                </a>
+                {children.length > 0 && (
+                  <div class="ml-1 grid gap-2 border-l border-border/20 pl-4">
+                    {children.map(link => (
+                      <a
+                        href={link.href}
+                        class="text-sm text-muted transition duration-150 ease-editorial hover:text-text"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div class="mt-8 grid gap-4 border-t border-border/10 pt-6 text-sm text-muted">
+          <LangSwitch locale={locale} path={path} />
+          <a href={`/${locale}/cart/`} class="w-fit text-text hover:underline underline-offset-4">
+            {locale === "en" ? "Go to Cart" : "前往購物車"} (<span data-cart-count>0</span>)
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    import { bindCartCountBadges } from "@/scripts/cart";
+
+    const mobileDialog = document.querySelector<HTMLDialogElement>("#mobile-nav-dialog");
+    const openButton = document.querySelector<HTMLElement>("[data-mobile-nav-open]");
+    const closeButton = mobileDialog?.querySelector<HTMLElement>("[data-mobile-nav-close]");
+
+    const closeDialog = () => {
+      if (!mobileDialog?.open) return;
+      mobileDialog.close();
+      document.body.style.overflow = "";
+    };
+
+    openButton?.addEventListener("click", () => {
+      mobileDialog?.showModal();
+      document.body.style.overflow = "hidden";
+    });
+    closeButton?.addEventListener("click", closeDialog);
+    mobileDialog?.addEventListener("click", event => {
+      if (event.target === mobileDialog) closeDialog();
+    });
+    mobileDialog?.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", closeDialog);
+    });
+    mobileDialog?.addEventListener("close", () => {
+      document.body.style.overflow = "";
+    });
+
+    bindCartCountBadges();
+  </script>
 </header>

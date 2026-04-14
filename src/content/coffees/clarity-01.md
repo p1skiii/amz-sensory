@@ -1,5 +1,9 @@
 ---
-slug: clarity-01
+stable_key: colombia-huila-01
+slug: colombia-huila-01
+legacy_slugs:
+  - clarity-01
+status: published
 order: 2
 title:
   en: Colombia • Huila • Washed

@@ -28,3 +28,9 @@ const coffees = (await getAllCoffees()).slice(0, 4);
     </div>
   </Container>
 </Section>
+
+<script>
+  import { bindCartAddButtons } from "@/scripts/cart";
+
+  bindCartAddButtons();
+</script>

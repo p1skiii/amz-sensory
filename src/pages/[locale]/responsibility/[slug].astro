@@ -12,6 +12,8 @@ import {
   getResponsibilityPaperBySlug,
 } from "@/utils/responsibilityPapers";
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const papers = await getResponsibilityPapers();
   return LOCALES.flatMap(locale =>

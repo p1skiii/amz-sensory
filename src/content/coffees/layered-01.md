@@ -1,5 +1,9 @@
 ---
-slug: layered-01
+stable_key: panama-boquete-01
+slug: panama-boquete-01
+legacy_slugs:
+  - layered-01
+status: published
 order: 3
 title:
   en: Panama • Boquete • Natural
