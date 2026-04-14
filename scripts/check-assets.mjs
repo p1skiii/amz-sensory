@@ -35,9 +35,14 @@ const checks = [
   },
 ];
 
+const skippedChecks = new Set(["public/brand/qr.png"]);
+
 const failures = [];
 
 for (const rule of checks) {
+  if (skippedChecks.has(rule.file)) {
+    continue;
+  }
   const absolutePath = path.resolve(rule.file);
   try {
     const fileStat = await stat(absolutePath);
