@@ -333,6 +333,7 @@ async function queryNotionPages(
       {
         method: "POST",
         headers: notionHeaders(token),
+        cache: "no-store",
         signal: controller.signal,
         body: JSON.stringify(
           cursor
