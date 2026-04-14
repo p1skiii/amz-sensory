@@ -34,14 +34,14 @@ const isEn = locale === "en";
       </div>
 
       <div class="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
-        <div class="border border-border/15 p-5 md:p-6">
+        <div class="border border-border/15 bg-bg p-5 md:p-6">
           <div class="space-y-4" data-cart-items>
             <p class="text-sm text-muted">{isEn ? "Your cart is empty." : "目前購物車是空的。"}</p>
           </div>
         </div>
 
         <div class="grid gap-6">
-          <div class="border border-border/15 p-5 md:p-6">
+          <div class="border border-border/15 bg-bg p-5 md:p-6">
             <div class="flex items-center justify-between text-sm">
               <span class="text-muted">{isEn ? "Subtotal" : "小計"}</span>
               <span class="text-text">HK$<span data-cart-subtotal>0</span></span>
@@ -53,7 +53,7 @@ const isEn = locale === "en";
             </p>
           </div>
 
-          <form class="grid gap-3 border border-border/15 p-5 md:p-6" data-checkout-form>
+          <form class="grid gap-3 border border-border/15 bg-bg p-5 md:p-6" data-checkout-form>
             <label class="grid gap-2">
               <span class="text-xs tracking-[0.12em] uppercase text-muted">
                 {isEn ? "Name" : "姓名"}
@@ -61,7 +61,7 @@ const isEn = locale === "en";
               <input
                 name="name"
                 required
-                class="border border-border/20 px-3 py-2 text-sm text-text"
+                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn ? "Your name" : "請輸入姓名"}
               />
             </label>
@@ -73,8 +73,20 @@ const isEn = locale === "en";
               <input
                 name="contact"
                 required
-                class="border border-border/20 px-3 py-2 text-sm text-text"
+                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn ? "Phone / WeChat / Email" : "電話 / WeChat / Email"}
+              />
+            </label>
+
+            <label class="grid gap-2">
+              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+                {isEn ? "Address" : "地址"}
+              </span>
+              <input
+                name="address"
+                required
+                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
+                placeholder={isEn ? "Delivery address" : "請輸入收件地址"}
               />
             </label>
 
@@ -85,7 +97,7 @@ const isEn = locale === "en";
               <textarea
                 name="notes"
                 rows="3"
-                class="border border-border/20 px-3 py-2 text-sm text-text"
+                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn ? "Optional notes" : "可選備註"}
               ></textarea>
             </label>
@@ -97,35 +109,44 @@ const isEn = locale === "en";
               {isEn ? "Generate Summary" : "生成訂單摘要"}
             </button>
           </form>
-
-          <div class="hidden grid gap-4 border border-border/15 p-5 md:p-6" data-order-summary>
-            <div class="grid gap-2">
-              <p class="text-xs tracking-[0.12em] uppercase text-muted">
-                {isEn ? "Order Summary" : "訂單摘要"}
-              </p>
-              <pre class="whitespace-pre-wrap text-xs text-text/90" data-order-text></pre>
-            </div>
-            <div class="flex items-center gap-3 text-xs">
-              <button
-                type="button"
-                class="border border-border/20 px-3 py-1.5 text-text transition duration-150 ease-editorial hover:border-border/40"
-                data-copy-summary
-              >
-                {isEn ? "Copy Text" : "複製摘要"}
-              </button>
-              <button
-                type="button"
-                class="text-muted hover:text-text hover:underline underline-offset-4"
-                data-wechat-open
-              >
-                {isEn ? "Show QR Code" : "顯示付款碼"}
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </Container>
   </Section>
+
+  <div
+    data-order-dialog
+    class="fixed inset-0 z-[90] hidden bg-bg/70 backdrop-blur-[4px]"
+    aria-hidden="true"
+  >
+    <div class="mx-auto flex min-h-full w-full max-w-container items-center justify-center px-4 sm:px-6 lg:px-10">
+      <div class="w-[min(92vw,560px)] rounded-[var(--radius)] border border-border/12 bg-bg p-5 text-text md:p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <p class="text-xs tracking-[0.12em] uppercase text-muted">
+            {isEn ? "Order Summary" : "訂單摘要"}
+          </p>
+          <button
+            type="button"
+            class="text-sm text-muted transition duration-150 ease-editorial hover:text-text"
+            data-order-dialog-close
+          >
+            ×
+          </button>
+        </div>
+        <pre class="whitespace-pre-wrap text-xs text-text/90" data-order-text></pre>
+        <div class="mt-4 flex justify-center">
+          <button
+            type="button"
+            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/45"
+            data-confirm-order
+            data-wechat-open
+          >
+            {isEn ? "Confirm Order" : "確認訂單"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <Footer />
   <WeChatDrawer />
@@ -146,9 +167,10 @@ const isEn = locale === "en";
     const itemsHost = document.querySelector<HTMLElement>("[data-cart-items]");
     const subtotalNodes = document.querySelectorAll<HTMLElement>("[data-cart-subtotal]");
     const form = document.querySelector<HTMLFormElement>("[data-checkout-form]");
-    const summaryBox = document.querySelector<HTMLElement>("[data-order-summary]");
+    const dialog = document.querySelector<HTMLElement>("[data-order-dialog]");
     const orderText = document.querySelector<HTMLElement>("[data-order-text]");
-    const copyBtn = document.querySelector<HTMLButtonElement>("[data-copy-summary]");
+    const closeDialogBtn = document.querySelector<HTMLButtonElement>("[data-order-dialog-close]");
+    const confirmOrderBtn = document.querySelector<HTMLButtonElement>("[data-confirm-order]");
 
     const render = (state: CartState) => {
       if (!itemsHost) return;
@@ -165,7 +187,7 @@ const isEn = locale === "en";
       itemsHost.innerHTML = state.items
         .map(
           item => `
-            <div class="grid gap-3 border border-border/10 p-3" data-item="${item.stable_key}">
+            <div class="grid gap-3 border border-border/10 bg-bg p-3" data-item="${item.stable_key}">
               <div class="flex items-start justify-between gap-3">
                 <a href="/${locale}/coffee/${item.slug}/" class="text-sm text-text hover:underline underline-offset-4">${item.title}</a>
                 <button type="button" class="text-xs text-muted hover:text-text" data-remove="${item.stable_key}">${isEnglish ? "Remove" : "刪除"}</button>
@@ -173,9 +195,9 @@ const isEn = locale === "en";
               <div class="flex items-center justify-between text-xs text-muted">
                 <span>HK$${item.price_hkd} / 100g</span>
                 <div class="flex items-center gap-2">
-                  <button type="button" class="border border-border/20 px-2 py-1 text-text" data-dec="${item.stable_key}">−</button>
+                  <button type="button" class="border border-border/20 bg-bg px-2 py-1 text-text" data-dec="${item.stable_key}">−</button>
                   <span>${item.qty}</span>
-                  <button type="button" class="border border-border/20 px-2 py-1 text-text" data-inc="${item.stable_key}">+</button>
+                  <button type="button" class="border border-border/20 bg-bg px-2 py-1 text-text" data-inc="${item.stable_key}">+</button>
                 </div>
               </div>
             </div>
@@ -218,6 +240,7 @@ const isEn = locale === "en";
         isEnglish ? "AMZ Sensory Order" : "AMZ Sensory 訂單",
         `Name: ${String(formData.get("name") || "")}`,
         `Contact: ${String(formData.get("contact") || "")}`,
+        `Address: ${String(formData.get("address") || "")}`,
         `Notes: ${String(formData.get("notes") || "")}`,
         "",
         ...(isEnglish ? ["Items:"] : ["商品："]),
@@ -237,30 +260,38 @@ const isEn = locale === "en";
       const formData = new FormData(form);
       const name = String(formData.get("name") || "").trim();
       const contact = String(formData.get("contact") || "").trim();
-      if (!name || !contact) {
+      const address = String(formData.get("address") || "").trim();
+      if (!name || !contact || !address) {
         window.alert(isEnglish ? "Please fill required fields." : "請填寫必填欄位。");
         return;
       }
 
       const summary = buildOrderSummary(state, formData);
-      if (summaryBox && orderText) {
+      if (dialog && orderText) {
         orderText.textContent = summary;
-        summaryBox.classList.remove("hidden");
+        dialog.classList.remove("hidden");
+        dialog.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
       }
     });
 
-    copyBtn?.addEventListener("click", async () => {
-      const text = orderText?.textContent ?? "";
-      if (!text.trim()) return;
-      try {
-        await navigator.clipboard.writeText(text);
-        copyBtn.textContent = isEnglish ? "Copied" : "已複製";
-        setTimeout(() => {
-          copyBtn.textContent = isEnglish ? "Copy Text" : "複製摘要";
-        }, 1000);
-      } catch {
-        copyBtn.textContent = text;
+    closeDialogBtn?.addEventListener("click", () => {
+      dialog?.classList.add("hidden");
+      dialog?.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    });
+
+    dialog?.addEventListener("click", event => {
+      if (event.target === dialog) {
+        dialog.classList.add("hidden");
+        dialog.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
       }
+    });
+    confirmOrderBtn?.addEventListener("click", () => {
+      dialog?.classList.add("hidden");
+      dialog?.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
     });
 
     const refresh = () => render(readCart());

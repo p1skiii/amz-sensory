@@ -97,8 +97,8 @@ const philosophyPapers = page === "philosophy" ? await getPhilosophyPapers() : [
                   <p class="mt-3 text-sm text-muted">
                     {block?.body ?? paper.summary[locale]}
                   </p>
-                  <p class="mt-5 text-xs tracking-[0.12em] uppercase text-text/90 group-hover:underline underline-offset-4">
-                    {locale === "en" ? "Read Article" : "閱讀文章"}
+                  <p class="mt-5 text-xs tracking-[0.12em] uppercase text-text/90 underline decoration-text/70 underline-offset-4">
+                    {locale === "en" ? "Read" : "閱讀"}
                   </p>
                 </a>
               );

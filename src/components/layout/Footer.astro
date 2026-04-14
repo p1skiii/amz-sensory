@@ -30,7 +30,7 @@ const infoLinks = [
 <footer class="border-t border-border/10 bg-surface" data-locale={locale}>
   <Container class="py-12 text-xs text-muted">
     <div class="mx-auto w-full max-w-[1080px]">
-      <div class="grid gap-12 md:grid-cols-3 md:gap-14">
+      <div class="grid gap-10 md:grid-cols-3 md:gap-12">
         <div class="grid content-start gap-4">
           <p class="font-serif text-2xl tracking-[-0.01em] text-text">
             {isEn ? "Key information" : "重要資訊"}
@@ -60,10 +60,7 @@ const infoLinks = [
                 : "接收新品發佈與風味更新通知。"
             }
           </p>
-          <form
-            class="flex w-full max-w-[340px] items-stretch border border-border/20"
-            data-newsletter-form
-          >
+          <form class="flex w-full max-w-[340px] items-stretch border border-border/20" data-newsletter-form>
             <input
               type="email"
               required
@@ -134,20 +131,6 @@ const infoLinks = [
             </a>
           </div>
 
-          <div class="grid gap-2 pt-2">
-            <a
-              class="max-w-[220px] text-sm transition duration-150 ease-editorial hover:text-text"
-              href="mailto:hello@amzsensory.com"
-            >
-              hello@amzsensory.com
-            </a>
-            <button
-              class="w-fit text-muted transition duration-150 ease-editorial hover:text-text"
-              data-wechat-open
-            >
-              WeChat / QR
-            </button>
-          </div>
         </div>
       </div>
 
