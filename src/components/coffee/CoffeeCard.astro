@@ -18,8 +18,10 @@ const price = `HK$${coffee.data.priceHkd} / 100g`;
 
 <article class="group grid gap-4">
   <a href={href} class="block">
-    <Aspect class="rounded-[var(--radius)] border border-border/15 bg-surface p-4 md:p-5">
-      <div class="h-full w-full rounded-[calc(var(--radius)-4px)] border border-border/10 bg-white/35 p-3">
+    <Aspect class="rounded-[var(--radius)] bg-surface">
+      <div
+        class="h-full w-full rounded-[var(--radius)] border border-border/15 bg-white/35 p-3 md:p-4"
+      >
         <img
           src={coffee.data.cover}
           alt={title}
@@ -53,9 +55,6 @@ const price = `HK$${coffee.data.priceHkd} / 100g`;
       >
         {locale === "en" ? "Add to Cart" : "加入購物車"}
       </button>
-      <a href={href} class="text-muted hover:text-text hover:underline underline-offset-4">
-        {locale === "en" ? "View" : "檢視"}
-      </a>
     </div>
   </div>
 </article>

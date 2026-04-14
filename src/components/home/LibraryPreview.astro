@@ -9,22 +9,37 @@ const { locale } = Astro.props as { locale: Locale };
 
 const coffees = (await getAllCoffees()).slice(0, 4);
 ---
+
 <Section>
   <Container>
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-xs tracking-[0.18em] uppercase text-muted">Current Releases</p>
+        <p class="text-xs tracking-[0.18em] text-muted uppercase">
+          Current Releases
+        </p>
         <h2 class="mt-3 font-serif text-2xl tracking-[-0.01em]">
           {locale === "en" ? "Library Preview" : "作品預覽"}
         </h2>
       </div>
-      <a href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"} class="text-xs text-text hover:underline underline-offset-4">
+      <a
+        href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"}
+        class="text-xs text-text underline-offset-4 hover:underline"
+      >
         {locale === "en" ? "View all" : "全部"}
       </a>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-16">
+    <div class="mt-8 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16">
       {coffees.map(coffee => <CoffeeCard coffee={coffee} locale={locale} />)}
+    </div>
+
+    <div class="mt-14 flex justify-center">
+      <a
+        href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"}
+        class="inline-flex min-w-[220px] items-center justify-center rounded-full border border-text/75 px-10 py-4 font-serif text-[36px] tracking-[0.01em] text-text transition duration-150 ease-editorial hover:bg-text/5 md:min-w-[320px] md:text-[52px]"
+      >
+        {locale === "en" ? "Explore More" : "探索更多"}
+      </a>
     </div>
   </Container>
 </Section>
