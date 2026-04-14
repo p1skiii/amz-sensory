@@ -1,5 +1,9 @@
 ---
-slug: clean-01
+stable_key: kenya-nyeri-01
+slug: kenya-nyeri-01
+legacy_slugs:
+  - clean-01
+status: published
 order: 4
 title:
   en: Kenya • Nyeri • Washed

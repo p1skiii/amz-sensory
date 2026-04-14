@@ -7,29 +7,31 @@ import Section from "@/components/layout/Section.astro";
 import Aspect from "@/components/ui/Aspect.astro";
 import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
 import { LOCALES, type Locale } from "@/data/locales";
-import { getAllCoffees } from "@/utils/getCoffees";
+import { getCoffeeBySlugOrLegacy } from "@/utils/getCoffees";
 
-export async function getStaticPaths() {
-  const coffees = await getAllCoffees();
-  return LOCALES.flatMap(locale =>
-    coffees.map(coffee => ({
-      params: {
-        locale,
-        slug: coffee.data.slug,
-      },
-      props: { coffee },
-    }))
-  );
-}
+export const prerender = false;
 
 const localeParam = Astro.params.locale;
 if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
   throw new Error(`Invalid locale: ${localeParam}`);
 }
 
+const slugParam = Astro.params.slug;
+if (!slugParam) {
+  throw new Error("Missing coffee slug");
+}
+
 const locale = localeParam as Locale;
 const path = Astro.url.pathname;
-const { coffee } = Astro.props;
+const { coffee, matchedLegacy } = await getCoffeeBySlugOrLegacy(slugParam);
+
+if (!coffee) {
+  return Astro.redirect(`/${locale}/coffee/`, 302);
+}
+
+if (matchedLegacy) {
+  return Astro.redirect(`/${locale}/coffee/${coffee.data.slug}/`, 301);
+}
 
 const title = coffee.data.title[locale];
 const origin = coffee.data.origin[locale];
@@ -51,13 +53,15 @@ const story = coffee.data.story[locale];
   <Section>
     <Container class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start">
       <div>
-        <Aspect>
-          <img
-            src={coffee.data.cover}
-            alt={title}
-            class="h-full w-full object-cover"
-            loading="lazy"
-          />
+        <Aspect class="rounded-[var(--radius)] border border-border/15 bg-surface p-4 md:p-5">
+          <div class="h-full w-full rounded-[calc(var(--radius)-4px)] border border-border/10 bg-white/35 p-3">
+            <img
+              src={coffee.data.cover}
+              alt={title}
+              class="h-full w-full object-contain"
+              loading="lazy"
+            />
+          </div>
         </Aspect>
       </div>
 
@@ -81,9 +85,53 @@ const story = coffee.data.story[locale];
           <p>{story}</p>
         </div>
 
+        <div class="grid gap-4">
+          <div class="flex items-center gap-2 text-xs">
+            <button
+              type="button"
+              class="border border-border/20 px-2 py-1 transition duration-150 ease-editorial hover:border-border/40"
+              data-item-qty-dec
+            >
+              −
+            </button>
+            <input
+              type="number"
+              min="1"
+              max="99"
+              value="1"
+              class="w-14 border border-border/20 px-2 py-1 text-center text-text"
+              data-item-qty
+            />
+            <button
+              type="button"
+              class="border border-border/20 px-2 py-1 transition duration-150 ease-editorial hover:border-border/40"
+              data-item-qty-inc
+            >
+              +
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/45"
+            data-detail-add
+            data-stable-key={coffee.data.stable_key}
+            data-slug={coffee.data.slug}
+            data-title={title}
+            data-price={coffee.data.priceHkd}
+            data-cover={coffee.data.cover}
+            data-added-label={locale === "en" ? "Added" : "已加入"}
+          >
+            {locale === "en" ? "Add to Cart" : "加入購物車"}
+          </button>
+        </div>
+
         <div class="flex items-center gap-6 text-xs">
           <a href={`/${locale}/coffee/`} class="text-text hover:underline underline-offset-4">
             {locale === "en" ? "Back to Coffee" : "回到作品庫"}
+          </a>
+          <a href={`/${locale}/cart/`} class="text-muted hover:text-text hover:underline underline-offset-4">
+            {locale === "en" ? "Go to Cart" : "前往購物車"}
           </a>
         </div>
       </div>
@@ -92,4 +140,56 @@ const story = coffee.data.story[locale];
 
   <Footer />
   <WeChatDrawer />
+
+  <script>
+    import { addToCart, bindCartCountBadges } from "@/scripts/cart";
+
+    const qtyInput = document.querySelector<HTMLInputElement>("[data-item-qty]");
+    const decButton = document.querySelector<HTMLButtonElement>("[data-item-qty-dec]");
+    const incButton = document.querySelector<HTMLButtonElement>("[data-item-qty-inc]");
+    const addButton = document.querySelector<HTMLButtonElement>("[data-detail-add]");
+
+    const normalizeQty = (value: number) => Math.max(1, Math.min(99, Math.floor(value)));
+    const currentQty = () => normalizeQty(Number(qtyInput?.value ?? "1"));
+
+    const setQty = (value: number) => {
+      if (!qtyInput) return;
+      qtyInput.value = String(normalizeQty(value));
+    };
+
+    decButton?.addEventListener("click", () => setQty(currentQty() - 1));
+    incButton?.addEventListener("click", () => setQty(currentQty() + 1));
+    qtyInput?.addEventListener("change", () => setQty(currentQty()));
+
+    addButton?.addEventListener("click", () => {
+      const stableKey = addButton.dataset.stableKey;
+      const slug = addButton.dataset.slug;
+      const title = addButton.dataset.title;
+      const cover = addButton.dataset.cover;
+      const price = Number(addButton.dataset.price);
+
+      if (!stableKey || !slug || !title || !cover || !Number.isFinite(price)) {
+        return;
+      }
+
+      addToCart(
+        {
+          stable_key: stableKey,
+          slug,
+          title,
+          cover,
+          price_hkd: price,
+        },
+        currentQty()
+      );
+
+      const previous = addButton.textContent;
+      addButton.textContent = addButton.dataset.addedLabel ?? "Added";
+      setTimeout(() => {
+        addButton.textContent = previous;
+      }, 900);
+    });
+
+    bindCartCountBadges();
+  </script>
 </Layout>

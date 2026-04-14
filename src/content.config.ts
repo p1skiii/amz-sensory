@@ -36,7 +36,10 @@ const localizedList = z.object({
 const coffees = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/coffees" }),
   schema: z.object({
+    stable_key: z.string().regex(/^[a-z0-9-]+$/),
     slug: z.string().regex(/^[a-z0-9-]+$/),
+    legacy_slugs: z.array(z.string().regex(/^[a-z0-9-]+$/)).default([]),
+    status: z.enum(["draft", "published"]).default("published"),
     order: z.number().int().nonnegative(),
     title: localizedText,
     origin: localizedText,

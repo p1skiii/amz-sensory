@@ -1,0 +1,271 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/layout/Header.astro";
+import Footer from "@/components/layout/Footer.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
+import { LOCALES, type Locale } from "@/data/locales";
+
+export const prerender = false;
+
+const localeParam = Astro.params.locale;
+if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
+  throw new Error(`Invalid locale: ${localeParam}`);
+}
+
+const locale = localeParam as Locale;
+const path = Astro.url.pathname;
+const isEn = locale === "en";
+---
+
+<Layout
+  locale={locale}
+  title={`AMZ Sensory | ${isEn ? "Cart" : "購物車"}`}
+  description={isEn ? "Review cart items and submit checkout details." : "確認商品、調整數量並提交下單資訊。"}
+>
+  <Header locale={locale} path={path} />
+
+  <Section>
+    <Container class="grid gap-10">
+      <div class="grid gap-4">
+        <p class="text-xs tracking-[0.18em] uppercase text-muted">Checkout</p>
+        <h1 class="font-serif text-4xl tracking-[-0.02em]">{isEn ? "Cart" : "購物車"}</h1>
+      </div>
+
+      <div class="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
+        <div class="border border-border/15 p-5 md:p-6">
+          <div class="space-y-4" data-cart-items>
+            <p class="text-sm text-muted">{isEn ? "Your cart is empty." : "目前購物車是空的。"}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-6">
+          <div class="border border-border/15 p-5 md:p-6">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">{isEn ? "Subtotal" : "小計"}</span>
+              <span class="text-text">HK$<span data-cart-subtotal>0</span></span>
+            </div>
+            <p class="mt-3 text-xs text-muted">
+              {isEn
+                ? "Checkout form creates an order summary and QR guidance."
+                : "提交後會生成可複製訂單摘要與付款碼引導。"}
+            </p>
+          </div>
+
+          <form class="grid gap-3 border border-border/15 p-5 md:p-6" data-checkout-form>
+            <label class="grid gap-2">
+              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+                {isEn ? "Name" : "姓名"}
+              </span>
+              <input
+                name="name"
+                required
+                class="border border-border/20 px-3 py-2 text-sm text-text"
+                placeholder={isEn ? "Your name" : "請輸入姓名"}
+              />
+            </label>
+
+            <label class="grid gap-2">
+              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+                {isEn ? "Contact" : "聯絡方式"}
+              </span>
+              <input
+                name="contact"
+                required
+                class="border border-border/20 px-3 py-2 text-sm text-text"
+                placeholder={isEn ? "Phone / WeChat / Email" : "電話 / WeChat / Email"}
+              />
+            </label>
+
+            <label class="grid gap-2">
+              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+                {isEn ? "Notes" : "備註"}
+              </span>
+              <textarea
+                name="notes"
+                rows="3"
+                class="border border-border/20 px-3 py-2 text-sm text-text"
+                placeholder={isEn ? "Optional notes" : "可選備註"}
+              ></textarea>
+            </label>
+
+            <button
+              type="submit"
+              class="mt-2 border border-border/25 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/45"
+            >
+              {isEn ? "Generate Summary" : "生成訂單摘要"}
+            </button>
+          </form>
+
+          <div class="hidden grid gap-4 border border-border/15 p-5 md:p-6" data-order-summary>
+            <div class="grid gap-2">
+              <p class="text-xs tracking-[0.12em] uppercase text-muted">
+                {isEn ? "Order Summary" : "訂單摘要"}
+              </p>
+              <pre class="whitespace-pre-wrap text-xs text-text/90" data-order-text></pre>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <button
+                type="button"
+                class="border border-border/20 px-3 py-1.5 text-text transition duration-150 ease-editorial hover:border-border/40"
+                data-copy-summary
+              >
+                {isEn ? "Copy Text" : "複製摘要"}
+              </button>
+              <button
+                type="button"
+                class="text-muted hover:text-text hover:underline underline-offset-4"
+                data-wechat-open
+              >
+                {isEn ? "Show QR Code" : "顯示付款碼"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Footer />
+  <WeChatDrawer />
+
+  <script>
+    import {
+      bindCartCountBadges,
+      getCartSubtotal,
+      readCart,
+      removeFromCart,
+      updateCartQty,
+      type CartState,
+    } from "@/scripts/cart";
+
+    const isEnglish = document.documentElement.lang === "en";
+    const locale = isEnglish ? "en" : "zh-hant";
+
+    const itemsHost = document.querySelector<HTMLElement>("[data-cart-items]");
+    const subtotalNodes = document.querySelectorAll<HTMLElement>("[data-cart-subtotal]");
+    const form = document.querySelector<HTMLFormElement>("[data-checkout-form]");
+    const summaryBox = document.querySelector<HTMLElement>("[data-order-summary]");
+    const orderText = document.querySelector<HTMLElement>("[data-order-text]");
+    const copyBtn = document.querySelector<HTMLButtonElement>("[data-copy-summary]");
+
+    const render = (state: CartState) => {
+      if (!itemsHost) return;
+      const subtotal = getCartSubtotal(state);
+      subtotalNodes.forEach(node => (node.textContent = String(subtotal)));
+
+      if (state.items.length === 0) {
+        itemsHost.innerHTML = `<p class="text-sm text-muted">${
+          isEnglish ? "Your cart is empty." : "目前購物車是空的。"
+        }</p>`;
+        return;
+      }
+
+      itemsHost.innerHTML = state.items
+        .map(
+          item => `
+            <div class="grid gap-3 border border-border/10 p-3" data-item="${item.stable_key}">
+              <div class="flex items-start justify-between gap-3">
+                <a href="/${locale}/coffee/${item.slug}/" class="text-sm text-text hover:underline underline-offset-4">${item.title}</a>
+                <button type="button" class="text-xs text-muted hover:text-text" data-remove="${item.stable_key}">${isEnglish ? "Remove" : "刪除"}</button>
+              </div>
+              <div class="flex items-center justify-between text-xs text-muted">
+                <span>HK$${item.price_hkd} / 100g</span>
+                <div class="flex items-center gap-2">
+                  <button type="button" class="border border-border/20 px-2 py-1 text-text" data-dec="${item.stable_key}">−</button>
+                  <span>${item.qty}</span>
+                  <button type="button" class="border border-border/20 px-2 py-1 text-text" data-inc="${item.stable_key}">+</button>
+                </div>
+              </div>
+            </div>
+          `
+        )
+        .join("");
+
+      itemsHost.querySelectorAll<HTMLButtonElement>("[data-remove]").forEach(button => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.remove;
+          if (key) removeFromCart(key);
+        });
+      });
+      itemsHost.querySelectorAll<HTMLButtonElement>("[data-dec]").forEach(button => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.dec;
+          if (!key) return;
+          const row = state.items.find(item => item.stable_key === key);
+          if (!row) return;
+          updateCartQty(key, row.qty - 1);
+        });
+      });
+      itemsHost.querySelectorAll<HTMLButtonElement>("[data-inc]").forEach(button => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.inc;
+          if (!key) return;
+          const row = state.items.find(item => item.stable_key === key);
+          if (!row) return;
+          updateCartQty(key, row.qty + 1);
+        });
+      });
+    };
+
+    const buildOrderSummary = (state: CartState, formData: FormData) => {
+      const lines = state.items.map(
+        item => `- ${item.title} × ${item.qty} = HK$${item.qty * item.price_hkd}`
+      );
+      const subtotal = getCartSubtotal(state);
+      return [
+        isEnglish ? "AMZ Sensory Order" : "AMZ Sensory 訂單",
+        `Name: ${String(formData.get("name") || "")}`,
+        `Contact: ${String(formData.get("contact") || "")}`,
+        `Notes: ${String(formData.get("notes") || "")}`,
+        "",
+        ...(isEnglish ? ["Items:"] : ["商品："]),
+        ...lines,
+        "",
+        `${isEnglish ? "Subtotal" : "小計"}: HK$${subtotal}`,
+      ].join("\n");
+    };
+
+    form?.addEventListener("submit", event => {
+      event.preventDefault();
+      const state = readCart();
+      if (state.items.length === 0) {
+        window.alert(isEnglish ? "Cart is empty." : "購物車是空的。");
+        return;
+      }
+      const formData = new FormData(form);
+      const name = String(formData.get("name") || "").trim();
+      const contact = String(formData.get("contact") || "").trim();
+      if (!name || !contact) {
+        window.alert(isEnglish ? "Please fill required fields." : "請填寫必填欄位。");
+        return;
+      }
+
+      const summary = buildOrderSummary(state, formData);
+      if (summaryBox && orderText) {
+        orderText.textContent = summary;
+        summaryBox.classList.remove("hidden");
+      }
+    });
+
+    copyBtn?.addEventListener("click", async () => {
+      const text = orderText?.textContent ?? "";
+      if (!text.trim()) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = isEnglish ? "Copied" : "已複製";
+        setTimeout(() => {
+          copyBtn.textContent = isEnglish ? "Copy Text" : "複製摘要";
+        }, 1000);
+      } catch {
+        copyBtn.textContent = text;
+      }
+    });
+
+    const refresh = () => render(readCart());
+    bindCartCountBadges();
+    refresh();
+    window.addEventListener("amz-cart:changed", refresh);
+  </script>
+</Layout>

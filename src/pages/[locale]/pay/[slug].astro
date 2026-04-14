@@ -6,31 +6,33 @@ import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import Aspect from "@/components/ui/Aspect.astro";
 import { LOCALES, type Locale } from "@/data/locales";
-import { getAllCoffees } from "@/utils/getCoffees";
+import { getCoffeeBySlugOrLegacy } from "@/utils/getCoffees";
 import { QR_SRC, WECHAT_ID } from "@/components/wechat/wechat";
 import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
 
-export async function getStaticPaths() {
-  const coffees = await getAllCoffees();
-  return LOCALES.flatMap(locale =>
-    coffees.map(coffee => ({
-      params: {
-        locale,
-        slug: coffee.data.slug,
-      },
-      props: { coffee },
-    }))
-  );
-}
+export const prerender = false;
 
 const localeParam = Astro.params.locale;
 if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
   throw new Error(`Invalid locale: ${localeParam}`);
 }
 
+const slugParam = Astro.params.slug;
+if (!slugParam) {
+  throw new Error("Missing pay slug");
+}
+
 const locale = localeParam as Locale;
 const path = Astro.url.pathname;
-const { coffee } = Astro.props;
+const { coffee, matchedLegacy } = await getCoffeeBySlugOrLegacy(slugParam);
+
+if (!coffee) {
+  return Astro.redirect(`/${locale}/coffee/`, 302);
+}
+
+if (matchedLegacy) {
+  return Astro.redirect(`/${locale}/pay/${coffee.data.slug}/`, 301);
+}
 
 const title = coffee.data.title[locale];
 const payTitle = locale === "en" ? "Payment" : "付款";

@@ -5,6 +5,11 @@ export const STATIC_PAGE_KEYS = [
   "method",
   "origins",
   "responsibility",
+  "contact",
+  "faq",
+  "shipping",
+  "terms",
+  "privacy",
 ] as const;
 
 export type StaticPageKey = (typeof STATIC_PAGE_KEYS)[number];
@@ -218,6 +223,216 @@ export const STATIC_PAGE_CONTENT: Record<
         {
           heading: "Waste",
           body: "以排程與杯測節奏降低過度烘焙與庫存陳化。",
+        },
+      ],
+    },
+  },
+  contact: {
+    en: {
+      title: "Contact",
+      description: "Contact AMZ Sensory for orders, product questions, and partnerships.",
+      eyebrow: "Contact",
+      lead: "For order support and business inquiries, reach us through the channels below.",
+      blocks: [
+        {
+          heading: "Email",
+          body: "hello@amzsensory.com is our main support mailbox.",
+        },
+        {
+          heading: "WeChat",
+          body: "Use the WeChat / QR entry to connect with our private order channel.",
+        },
+        {
+          heading: "Response Time",
+          body: "We typically reply within 24 hours on business days.",
+        },
+      ],
+    },
+    "zh-hant": {
+      title: "聯絡我們",
+      description: "聯絡 AMZ Sensory：訂單、商品問題與合作洽詢。",
+      eyebrow: "Contact",
+      lead: "如需訂單協助或合作洽詢，請使用以下聯絡方式。",
+      blocks: [
+        {
+          heading: "Email",
+          body: "主要客服信箱：hello@amzsensory.com。",
+        },
+        {
+          heading: "WeChat",
+          body: "可透過 WeChat / QR 入口進入私域下單通道。",
+        },
+        {
+          heading: "回覆時間",
+          body: "工作日通常於 24 小時內回覆。",
+        },
+      ],
+    },
+  },
+  faq: {
+    en: {
+      title: "FAQ",
+      description: "Frequently asked questions about AMZ Sensory coffee and ordering.",
+      eyebrow: "FAQ",
+      lead: "Answers to common questions about roasting style, storage, and orders.",
+      blocks: [
+        {
+          heading: "How should I brew these coffees?",
+          body: "We recommend starting with filter-style recipes and adjusting by cup clarity.",
+        },
+        {
+          heading: "How should I store bottles?",
+          body: "Keep sealed bottles in a cool, dry space away from direct sunlight.",
+        },
+        {
+          heading: "Can I order in bulk?",
+          body: "Yes. Contact us with your required volume and preferred shipping schedule.",
+        },
+      ],
+    },
+    "zh-hant": {
+      title: "常見問題",
+      description: "AMZ Sensory 咖啡與下單流程常見問題。",
+      eyebrow: "FAQ",
+      lead: "整理常見的沖煮、保存與下單問題。",
+      blocks: [
+        {
+          heading: "建議怎麼沖煮？",
+          body: "建議先以手沖配方起手，再依杯中乾淨度與濃度微調。",
+        },
+        {
+          heading: "鋁瓶如何保存？",
+          body: "請置於陰涼乾燥處，避免陽光直射與高溫環境。",
+        },
+        {
+          heading: "可否大量採購？",
+          body: "可以，請來信提供需求量與預計出貨節奏。",
+        },
+      ],
+    },
+  },
+  shipping: {
+    en: {
+      title: "Shipping",
+      description: "Shipping and fulfillment information for AMZ Sensory orders.",
+      eyebrow: "Shipping",
+      lead: "Fulfillment is arranged in small batches to keep inventory fresh.",
+      blocks: [
+        {
+          heading: "Processing",
+          body: "Orders are typically prepared within 1-2 business days.",
+        },
+        {
+          heading: "Regions",
+          body: "We currently support domestic shipping and selected international routes.",
+        },
+        {
+          heading: "Tracking",
+          body: "Shipping updates are sent once the package is handed to the carrier.",
+        },
+      ],
+    },
+    "zh-hant": {
+      title: "配送資訊",
+      description: "AMZ Sensory 訂單配送與出貨說明。",
+      eyebrow: "Shipping",
+      lead: "我們以小批次節奏出貨，維持商品新鮮與穩定。",
+      blocks: [
+        {
+          heading: "出貨時程",
+          body: "一般下單後 1-2 個工作日內安排出貨。",
+        },
+        {
+          heading: "配送地區",
+          body: "目前支援本地配送與部分國際路線。",
+        },
+        {
+          heading: "物流通知",
+          body: "交寄後會提供物流更新資訊。",
+        },
+      ],
+    },
+  },
+  terms: {
+    en: {
+      title: "Terms & Privacy",
+      description: "Terms of purchase and privacy notice for AMZ Sensory.",
+      eyebrow: "Terms",
+      lead: "By placing an order, you agree to our ordering and data handling practices.",
+      blocks: [
+        {
+          heading: "Order Terms",
+          body: "Submitted orders are confirmed manually before final fulfillment.",
+        },
+        {
+          heading: "Returns",
+          body: "For quality issues, contact us within 7 days with order details.",
+        },
+        {
+          heading: "Data Use",
+          body: "Contact information is used solely for order communication and support.",
+        },
+      ],
+    },
+    "zh-hant": {
+      title: "條款與隱私",
+      description: "AMZ Sensory 購買條款與隱私說明。",
+      eyebrow: "Terms",
+      lead: "提交訂單即表示你同意我們的下單流程與資料使用方式。",
+      blocks: [
+        {
+          heading: "下單條款",
+          body: "訂單會先由人工確認，再進入正式出貨流程。",
+        },
+        {
+          heading: "退換說明",
+          body: "如有品質疑慮，請於 7 日內附訂單資訊聯絡我們。",
+        },
+        {
+          heading: "資料使用",
+          body: "聯絡資訊僅用於訂單溝通與售後協助。",
+        },
+      ],
+    },
+  },
+  privacy: {
+    en: {
+      title: "Privacy Policy",
+      description: "How AMZ Sensory handles customer privacy and contact data.",
+      eyebrow: "Privacy",
+      lead: "We keep data collection minimal and only for operational communication.",
+      blocks: [
+        {
+          heading: "Collected Data",
+          body: "Name and contact details are collected only when you submit an order form.",
+        },
+        {
+          heading: "Usage Scope",
+          body: "Data is used for order confirmation, shipping updates, and support responses.",
+        },
+        {
+          heading: "Retention",
+          body: "Information is retained only as long as needed for order service records.",
+        },
+      ],
+    },
+    "zh-hant": {
+      title: "隱私政策",
+      description: "AMZ Sensory 客戶隱私與資料處理政策。",
+      eyebrow: "Privacy",
+      lead: "我們以最小化蒐集原則處理資料，僅用於必要的訂單溝通。",
+      blocks: [
+        {
+          heading: "蒐集資料",
+          body: "僅在你提交訂單資訊時蒐集姓名與聯絡方式。",
+        },
+        {
+          heading: "使用範圍",
+          body: "僅用於訂單確認、物流通知與客服回覆。",
+        },
+        {
+          heading: "保存期間",
+          body: "資料僅保留於必要的訂單服務紀錄期間。",
         },
       ],
     },

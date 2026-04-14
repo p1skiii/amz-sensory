@@ -12,6 +12,8 @@ import {
   getPhilosophyPaperBySlug,
 } from "@/utils/philosophyPapers";
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const papers = await getPhilosophyPapers();
   return LOCALES.flatMap(locale =>

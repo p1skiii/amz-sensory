@@ -9,6 +9,8 @@ import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
 import { LOCALES, type Locale } from "@/data/locales";
 import { getOriginPapers, getOriginPaperBySlug } from "@/utils/originPapers";
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const papers = await getOriginPapers();
   return LOCALES.flatMap(locale =>
