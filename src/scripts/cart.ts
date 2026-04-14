@@ -14,6 +14,8 @@ export type CartState = {
   updated_at: string;
 };
 
+let cartCountBadgesBound = false;
+
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
 }
@@ -101,10 +103,15 @@ export function writeCart(state: CartState): CartState {
   return normalized;
 }
 
-export function addToCart(payload: Omit<CartItem, "qty">, quantity = 1): CartState {
+export function addToCart(
+  payload: Omit<CartItem, "qty">,
+  quantity = 1
+): CartState {
   const state = readCart();
   const qty = sanitizeQuantity(quantity);
-  const existing = state.items.find(item => item.stable_key === payload.stable_key);
+  const existing = state.items.find(
+    item => item.stable_key === payload.stable_key
+  );
 
   if (existing) {
     existing.qty = sanitizeQuantity(existing.qty + qty);
@@ -155,6 +162,9 @@ export function bindCartAddButtons() {
     document.querySelectorAll<HTMLButtonElement>("[data-cart-add]")
   );
   for (const button of buttons) {
+    if (button.dataset.cartAddBound === "true") continue;
+    button.dataset.cartAddBound = "true";
+
     button.addEventListener("click", () => {
       const stableKey = button.dataset.stableKey;
       const slug = button.dataset.slug;
@@ -175,7 +185,7 @@ export function bindCartAddButtons() {
         1
       );
 
-      const previousLabel = button.textContent;
+      const previousLabel = button.textContent ?? "";
       button.textContent = button.dataset.addedLabel ?? "Added";
       window.setTimeout(() => {
         button.textContent = previousLabel;
@@ -190,11 +200,16 @@ export function bindCartCountBadges() {
   const sync = () => {
     const state = readCart();
     const count = getCartCount(state);
-    document.querySelectorAll<HTMLElement>("[data-cart-count]").forEach(node => {
-      node.textContent = String(count);
-    });
+    document
+      .querySelectorAll<HTMLElement>("[data-cart-count]")
+      .forEach(node => {
+        node.textContent = String(count);
+      });
   };
 
   sync();
+  if (cartCountBadgesBound) return;
+
   window.addEventListener("amz-cart:changed", sync);
+  cartCountBadgesBound = true;
 }

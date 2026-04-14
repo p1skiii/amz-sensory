@@ -45,12 +45,39 @@ type NotionProperty = {
 };
 
 type NotionOverride = Partial<CoffeeData> & { stable_key: string };
+
+const COFFEE_SLUG_PATTERN = /^[a-z0-9-]+$/;
 const NOTION_REQUEST_TIMEOUT_MS = 8000;
+const NOTION_CACHE_TTL_MS = 60 * 1000;
+
+let notionOverridesCache:
+  | {
+      expiresAt: number;
+      data: Map<string, NotionOverride>;
+    }
+  | undefined;
 
 function normalizeText(value: string | undefined): string | undefined {
   if (!value) return undefined;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function normalizeSlug(value: string | undefined): string | undefined {
+  const normalized = normalizeText(value)?.toLowerCase();
+  if (!normalized || !COFFEE_SLUG_PATTERN.test(normalized)) return undefined;
+  return normalized;
+}
+
+function normalizeSlugList(values: string[] | undefined): string[] | undefined {
+  if (!values) return undefined;
+
+  const normalized = values
+    .map(value => normalizeSlug(value))
+    .filter((value): value is string => Boolean(value));
+
+  if (normalized.length < 1) return undefined;
+  return [...new Set(normalized)];
 }
 
 function normalizeCoverUrl(url?: string): string | undefined {
@@ -127,9 +154,7 @@ function propertyToStatus(property?: NotionProperty): CoffeeStatus | undefined {
   if (property.type === "status") {
     const status = property.status as { name?: unknown } | null | undefined;
     const name =
-      typeof status?.name === "string"
-        ? status.name.toLowerCase()
-        : undefined;
+      typeof status?.name === "string" ? status.name.toLowerCase() : undefined;
     if (name === "published") return "published";
     if (name === "draft") return "draft";
   }
@@ -205,14 +230,24 @@ function mergeLocalizedList(
   };
 }
 
-function mergeWithOverride(base: CoffeeData, override: NotionOverride): CoffeeData {
+function mergeWithOverride(
+  base: CoffeeData,
+  override: NotionOverride
+): CoffeeData {
+  const normalizedStableKey = normalizeSlug(override.stable_key);
+  const normalizedSlug = normalizeSlug(override.slug);
+  const normalizedLegacy = normalizeSlugList(override.legacy_slugs);
+
   return {
     ...base,
-    stable_key: override.stable_key,
-    slug: normalizeText(override.slug) ?? base.slug,
-    legacy_slugs: override.legacy_slugs ?? base.legacy_slugs,
+    stable_key: normalizedStableKey ?? base.stable_key,
+    slug: normalizedSlug ?? base.slug,
+    legacy_slugs: normalizedLegacy ?? base.legacy_slugs,
     status: override.status ?? base.status,
-    order: typeof override.order === "number" ? override.order : base.order,
+    order:
+      typeof override.order === "number" && Number.isFinite(override.order)
+        ? override.order
+        : base.order,
     title: mergeLocalizedText(base.title, override.title),
     origin: mergeLocalizedText(base.origin, override.origin),
     process: mergeLocalizedText(base.process, override.process),
@@ -226,10 +261,12 @@ function mergeWithOverride(base: CoffeeData, override: NotionOverride): CoffeeDa
 }
 
 function completeNotionRecord(record: NotionOverride): CoffeeData | undefined {
-  if (!record.stable_key) return undefined;
+  const stableKey = normalizeSlug(record.stable_key);
+  if (!stableKey) return undefined;
   if (record.status === "draft") return undefined;
 
-  const slug = normalizeText(record.slug) ?? record.stable_key;
+  const slug = normalizeSlug(record.slug) ?? stableKey;
+  const legacySlugs = normalizeSlugList(record.legacy_slugs) ?? [];
   const titleEn = normalizeText(record.title?.en);
   const titleZh = normalizeText(record.title?.["zh-hant"]);
   const originEn = normalizeText(record.origin?.en);
@@ -250,6 +287,8 @@ function completeNotionRecord(record: NotionOverride): CoffeeData | undefined {
     !processEn ||
     !processZh ||
     typeof record.priceHkd !== "number" ||
+    !Number.isFinite(record.priceHkd) ||
+    record.priceHkd <= 0 ||
     !notesEn ||
     !notesZh ||
     !storyEn ||
@@ -264,11 +303,14 @@ function completeNotionRecord(record: NotionOverride): CoffeeData | undefined {
   if (tastingEn.length === 0 || tastingZh.length === 0) return undefined;
 
   return {
-    stable_key: record.stable_key,
+    stable_key: stableKey,
     slug,
-    legacy_slugs: record.legacy_slugs ?? [],
+    legacy_slugs: legacySlugs,
     status: "published",
-    order: typeof record.order === "number" ? record.order : 999,
+    order:
+      typeof record.order === "number" && Number.isFinite(record.order)
+        ? record.order
+        : 999,
     title: { en: titleEn, "zh-hant": titleZh },
     origin: { en: originEn, "zh-hant": originZh },
     process: { en: processEn, "zh-hant": processZh },
@@ -318,6 +360,25 @@ function notionHeaders(token: string): HeadersInit {
   };
 }
 
+function cloneOverridesMap(
+  source: Map<string, NotionOverride>
+): Map<string, NotionOverride> {
+  return new Map(source);
+}
+
+function getValidCache(): Map<string, NotionOverride> | undefined {
+  if (!notionOverridesCache) return undefined;
+  if (Date.now() > notionOverridesCache.expiresAt) return undefined;
+  return cloneOverridesMap(notionOverridesCache.data);
+}
+
+function setOverridesCache(overrides: Map<string, NotionOverride>) {
+  notionOverridesCache = {
+    expiresAt: Date.now() + NOTION_CACHE_TTL_MS,
+    data: cloneOverridesMap(overrides),
+  };
+}
+
 async function queryNotionPages(
   token: string,
   databaseId: string
@@ -327,7 +388,10 @@ async function queryNotionPages(
 
   do {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), NOTION_REQUEST_TIMEOUT_MS);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      NOTION_REQUEST_TIMEOUT_MS
+    );
     const response = await fetch(
       `https://api.notion.com/v1/databases/${databaseId}/query`,
       {
@@ -360,8 +424,10 @@ async function queryNotionPages(
 function parseNotionPage(page: NotionPage): NotionOverride | undefined {
   const props = page.properties;
 
-  const stableKey = normalizeText(
-    propertyToText(pickProperty(props, ["stable_key", "Stable Key", "stableKey"]))
+  const stableKey = normalizeSlug(
+    propertyToText(
+      pickProperty(props, ["stable_key", "Stable Key", "stableKey"])
+    )
   );
   if (!stableKey) return undefined;
 
@@ -370,14 +436,18 @@ function parseNotionPage(page: NotionPage): NotionOverride | undefined {
 
   const cover =
     propertyToFileUrl(pickProperty(props, ["cover", "Cover"])) ??
-    normalizeCoverUrl(propertyToText(pickProperty(props, ["cover_url", "coverUrl"])));
+    normalizeCoverUrl(
+      propertyToText(pickProperty(props, ["cover_url", "coverUrl"]))
+    );
 
-  const slug = normalizeText(
+  const slug = normalizeSlug(
     propertyToText(pickProperty(props, ["slug", "Slug"]))
   );
 
-  const legacyRaw = propertyToStringList(
-    pickProperty(props, ["legacy_slugs", "legacySlugs", "Legacy Slugs"])
+  const legacyRaw = normalizeSlugList(
+    propertyToStringList(
+      pickProperty(props, ["legacy_slugs", "legacySlugs", "Legacy Slugs"])
+    )
   );
 
   const tastingEn = propertyToStringList(
@@ -397,7 +467,8 @@ function parseNotionPage(page: NotionPage): NotionOverride | undefined {
     title: {
       en: propertyToText(pickProperty(props, ["title_en", "Title EN"])) ?? "",
       "zh-hant":
-        propertyToText(pickProperty(props, ["title_zh_hant", "Title ZH"])) ?? "",
+        propertyToText(pickProperty(props, ["title_zh_hant", "Title ZH"])) ??
+        "",
     },
     origin: {
       en: propertyToText(pickProperty(props, ["origin_en", "Origin EN"])) ?? "",
@@ -406,10 +477,12 @@ function parseNotionPage(page: NotionPage): NotionOverride | undefined {
         "",
     },
     process: {
-      en: propertyToText(pickProperty(props, ["process_en", "Process EN"])) ?? "",
+      en:
+        propertyToText(pickProperty(props, ["process_en", "Process EN"])) ?? "",
       "zh-hant":
-        propertyToText(pickProperty(props, ["process_zh_hant", "Process ZH"])) ??
-        "",
+        propertyToText(
+          pickProperty(props, ["process_zh_hant", "Process ZH"])
+        ) ?? "",
     },
     tasting: {
       en: tastingEn ?? [],
@@ -418,12 +491,14 @@ function parseNotionPage(page: NotionPage): NotionOverride | undefined {
     notes: {
       en: propertyToText(pickProperty(props, ["notes_en", "Notes EN"])) ?? "",
       "zh-hant":
-        propertyToText(pickProperty(props, ["notes_zh_hant", "Notes ZH"])) ?? "",
+        propertyToText(pickProperty(props, ["notes_zh_hant", "Notes ZH"])) ??
+        "",
     },
     story: {
       en: propertyToText(pickProperty(props, ["story_en", "Story EN"])) ?? "",
       "zh-hant":
-        propertyToText(pickProperty(props, ["story_zh_hant", "Story ZH"])) ?? "",
+        propertyToText(pickProperty(props, ["story_zh_hant", "Story ZH"])) ??
+        "",
     },
     cover,
   };
@@ -439,14 +514,25 @@ async function getNotionOverrides(): Promise<Map<string, NotionOverride>> {
     return new Map();
   }
 
-  const pages = await queryNotionPages(token, databaseId);
-  const map = new Map<string, NotionOverride>();
-  for (const page of pages) {
-    const record = parseNotionPage(page);
-    if (!record || record.status === "draft") continue;
-    map.set(record.stable_key, record);
+  const cached = getValidCache();
+  if (cached) return cached;
+
+  try {
+    const pages = await queryNotionPages(token, databaseId);
+    const map = new Map<string, NotionOverride>();
+    for (const page of pages) {
+      const record = parseNotionPage(page);
+      if (!record || record.status === "draft") continue;
+      map.set(record.stable_key, record);
+    }
+    setOverridesCache(map);
+    return cloneOverridesMap(map);
+  } catch {
+    if (notionOverridesCache) {
+      return cloneOverridesMap(notionOverridesCache.data);
+    }
+    throw new Error("Unable to query Notion overrides");
   }
-  return map;
 }
 
 export async function getAllCoffees(): Promise<CoffeeEntry[]> {
@@ -495,19 +581,25 @@ export async function getAllCoffees(): Promise<CoffeeEntry[]> {
 export async function getCoffeeBySlug(
   slug: string
 ): Promise<CoffeeEntry | undefined> {
+  const normalizedSlug = normalizeSlug(slug);
+  if (!normalizedSlug) return undefined;
+
   const coffees = await getAllCoffees();
-  return coffees.find(coffee => coffee.data.slug === slug);
+  return coffees.find(coffee => coffee.data.slug === normalizedSlug);
 }
 
 export async function getCoffeeBySlugOrLegacy(
   slug: string
 ): Promise<{ coffee?: CoffeeEntry; matchedLegacy: boolean }> {
+  const normalizedSlug = normalizeSlug(slug);
+  if (!normalizedSlug) return { matchedLegacy: false };
+
   const coffees = await getAllCoffees();
-  const exact = coffees.find(coffee => coffee.data.slug === slug);
+  const exact = coffees.find(coffee => coffee.data.slug === normalizedSlug);
   if (exact) return { coffee: exact, matchedLegacy: false };
 
   const legacy = coffees.find(coffee =>
-    (coffee.data.legacy_slugs ?? []).includes(slug)
+    (coffee.data.legacy_slugs ?? []).includes(normalizedSlug)
   );
   return { coffee: legacy, matchedLegacy: Boolean(legacy) };
 }

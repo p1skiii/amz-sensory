@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer.astro";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import Aspect from "@/components/ui/Aspect.astro";
-import { LOCALES, type Locale } from "@/data/locales";
+import { isLocale, type Locale } from "@/data/locales";
 import { getCoffeeBySlugOrLegacy } from "@/utils/getCoffees";
 import { QR_SRC, WECHAT_ID } from "@/components/wechat/wechat";
 import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
@@ -13,18 +13,22 @@ import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
 export const prerender = false;
 
 const localeParam = Astro.params.locale;
-if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
-  throw new Error(`Invalid locale: ${localeParam}`);
+if (!isLocale(localeParam)) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
 const slugParam = Astro.params.slug;
 if (!slugParam) {
-  throw new Error("Missing pay slug");
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+const slug = slugParam.toLowerCase();
+if (!/^[a-z0-9-]+$/.test(slug)) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
-const locale = localeParam as Locale;
+const locale: Locale = localeParam;
 const path = Astro.url.pathname;
-const { coffee, matchedLegacy } = await getCoffeeBySlugOrLegacy(slugParam);
+const { coffee, matchedLegacy } = await getCoffeeBySlugOrLegacy(slug);
 
 if (!coffee) {
   return Astro.redirect(`/${locale}/coffee/`, 302);
@@ -36,9 +40,10 @@ if (matchedLegacy) {
 
 const title = coffee.data.title[locale];
 const payTitle = locale === "en" ? "Payment" : "付款";
-const summary = locale === "en"
-  ? "Scan the WeChat QR to complete your order."
-  : "請使用 WeChat 掃描 QR 完成訂單。";
+const summary =
+  locale === "en"
+    ? "Scan the WeChat QR to complete your order."
+    : "請使用 WeChat 掃描 QR 完成訂單。";
 ---
 
 <Layout
@@ -50,10 +55,14 @@ const summary = locale === "en"
   <Header locale={locale} path={path} />
 
   <Section>
-    <Container class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start">
+    <Container
+      class="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-16"
+    >
       <div class="grid gap-6">
         <div>
-          <p class="text-xs tracking-[0.18em] uppercase text-muted">{payTitle}</p>
+          <p class="text-xs tracking-[0.18em] text-muted uppercase">
+            {payTitle}
+          </p>
           <h1 class="mt-3 font-serif text-4xl tracking-[-0.02em]">{title}</h1>
           <p class="mt-3 text-sm text-muted">{summary}</p>
         </div>
@@ -65,25 +74,40 @@ const summary = locale === "en"
 
         <div class="grid gap-2" data-pay-wechat-id={WECHAT_ID}>
           <p class="text-xs text-muted">WeChat ID</p>
-          <div class="flex items-center justify-between gap-3 border border-border/10 rounded-[var(--radius)] px-4 py-3">
+          <div
+            class="flex items-center justify-between gap-3 rounded-[var(--radius)] border border-border/10 px-4 py-3"
+          >
             <code class="text-sm text-text">{WECHAT_ID}</code>
-            <button class="text-xs text-text hover:underline underline-offset-4" data-copy-wechat-id type="button">
+            <button
+              class="text-xs text-text underline-offset-4 hover:underline"
+              data-copy-wechat-id
+              type="button"
+            >
               Copy
             </button>
           </div>
         </div>
 
         <div class="flex items-center gap-6 text-xs">
-          <a href={`/${locale}/coffee/${coffee.data.slug}/`} class="text-text hover:underline underline-offset-4">
+          <a
+            href={`/${locale}/coffee/${coffee.data.slug}/`}
+            class="text-text underline-offset-4 hover:underline"
+          >
             {locale === "en" ? "Back to Product" : "回到商品頁"}
           </a>
-          <button type="button" class="text-text hover:underline underline-offset-4" data-wechat-open>
+          <button
+            type="button"
+            class="text-text underline-offset-4 hover:underline"
+            data-wechat-open
+          >
             {locale === "en" ? "Open WeChat Drawer" : "開啟 WeChat 視窗"}
           </button>
         </div>
       </div>
 
-      <div class="border border-border/10 rounded-[var(--radius)] p-6 bg-surface">
+      <div
+        class="rounded-[var(--radius)] border border-border/10 bg-surface p-6"
+      >
         <Aspect ratio="1/1" class="rounded-none">
           <img
             src={QR_SRC}
@@ -93,8 +117,12 @@ const summary = locale === "en"
             data-pay-qr
           />
         </Aspect>
-        <p class="hidden mt-4 text-xs text-muted" data-pay-qr-fallback>
-          {locale === "en" ? "QR image unavailable. Use WeChat ID above." : "QR 圖片載入失敗，請使用上方 WeChat ID。"}
+        <p class="mt-4 hidden text-xs text-muted" data-pay-qr-fallback>
+          {
+            locale === "en"
+              ? "QR image unavailable. Use WeChat ID above."
+              : "QR 圖片載入失敗，請使用上方 WeChat ID。"
+          }
         </p>
       </div>
     </Container>
@@ -105,11 +133,12 @@ const summary = locale === "en"
 </Layout>
 
 <script>
-  const copyButton = document.querySelector<HTMLButtonElement>("[data-copy-wechat-id]");
+  const copyButton = document.querySelector<HTMLButtonElement>(
+    "[data-copy-wechat-id]"
+  );
   const wechatId =
-    document
-      .querySelector<HTMLElement>("[data-pay-wechat-id]")
-      ?.dataset.payWechatId ?? "AMZ_SENSORY";
+    document.querySelector<HTMLElement>("[data-pay-wechat-id]")?.dataset
+      .payWechatId ?? "AMZ_SENSORY";
   copyButton?.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(wechatId);
@@ -123,7 +152,9 @@ const summary = locale === "en"
   });
 
   const qrImage = document.querySelector<HTMLImageElement>("[data-pay-qr]");
-  const qrFallback = document.querySelector<HTMLElement>("[data-pay-qr-fallback]");
+  const qrFallback = document.querySelector<HTMLElement>(
+    "[data-pay-qr-fallback]"
+  );
   qrImage?.addEventListener("error", () => {
     qrFallback?.classList.remove("hidden");
   });

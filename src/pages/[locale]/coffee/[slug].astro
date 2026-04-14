@@ -6,24 +6,28 @@ import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import Aspect from "@/components/ui/Aspect.astro";
 import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
-import { LOCALES, type Locale } from "@/data/locales";
+import { isLocale, type Locale } from "@/data/locales";
 import { getCoffeeBySlugOrLegacy } from "@/utils/getCoffees";
 
 export const prerender = false;
 
 const localeParam = Astro.params.locale;
-if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
-  throw new Error(`Invalid locale: ${localeParam}`);
+if (!isLocale(localeParam)) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
 const slugParam = Astro.params.slug;
 if (!slugParam) {
-  throw new Error("Missing coffee slug");
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+const slug = slugParam.toLowerCase();
+if (!/^[a-z0-9-]+$/.test(slug)) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
-const locale = localeParam as Locale;
+const locale: Locale = localeParam;
 const path = Astro.url.pathname;
-const { coffee, matchedLegacy } = await getCoffeeBySlugOrLegacy(slugParam);
+const { coffee, matchedLegacy } = await getCoffeeBySlugOrLegacy(slug);
 
 if (!coffee) {
   return Astro.redirect(`/${locale}/coffee/`, 302);
@@ -51,10 +55,16 @@ const story = coffee.data.story[locale];
   <Header locale={locale} path={path} />
 
   <Section>
-    <Container class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start">
+    <Container
+      class="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-16"
+    >
       <div>
-        <Aspect class="rounded-[var(--radius)] border border-border/15 bg-surface p-4 md:p-5">
-          <div class="h-full w-full rounded-[calc(var(--radius)-4px)] border border-border/10 bg-white/35 p-3">
+        <Aspect
+          class="rounded-[var(--radius)] border border-border/15 bg-surface p-4 md:p-5"
+        >
+          <div
+            class="h-full w-full rounded-[calc(var(--radius)-4px)] border border-border/10 bg-white/35 p-3"
+          >
             <img
               src={coffee.data.cover}
               alt={title}
@@ -67,14 +77,16 @@ const story = coffee.data.story[locale];
 
       <div class="grid gap-6">
         <div>
-          <p class="text-xs tracking-[0.18em] uppercase text-muted">Coffee</p>
+          <p class="text-xs tracking-[0.18em] text-muted uppercase">Coffee</p>
           <h1 class="mt-3 font-serif text-4xl tracking-[-0.02em]">{title}</h1>
           <p class="mt-3 text-sm text-text/90">{origin} · {process}</p>
-          <p class="mt-2 text-xs tracking-[0.12em] text-muted uppercase">{price}</p>
+          <p class="mt-2 text-xs tracking-[0.12em] text-muted uppercase">
+            {price}
+          </p>
         </div>
 
         <div class="grid gap-3">
-          <p class="text-xs tracking-[0.18em] uppercase text-muted">
+          <p class="text-xs tracking-[0.18em] text-muted uppercase">
             {locale === "en" ? "Tasting" : "風味"}
           </p>
           <p class="text-sm text-muted">{tasting.join(" · ")}</p>
@@ -113,7 +125,7 @@ const story = coffee.data.story[locale];
 
           <button
             type="button"
-            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/45"
+            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
             data-detail-add
             data-stable-key={coffee.data.stable_key}
             data-slug={coffee.data.slug}
@@ -127,10 +139,16 @@ const story = coffee.data.story[locale];
         </div>
 
         <div class="flex items-center gap-6 text-xs">
-          <a href={`/${locale}/coffee/`} class="text-text hover:underline underline-offset-4">
+          <a
+            href={`/${locale}/coffee/`}
+            class="text-text underline-offset-4 hover:underline"
+          >
             {locale === "en" ? "Back to Coffee" : "回到作品庫"}
           </a>
-          <a href={`/${locale}/cart/`} class="text-muted hover:text-text hover:underline underline-offset-4">
+          <a
+            href={`/${locale}/cart/`}
+            class="text-muted underline-offset-4 hover:text-text hover:underline"
+          >
             {locale === "en" ? "Go to Cart" : "前往購物車"}
           </a>
         </div>
@@ -144,12 +162,19 @@ const story = coffee.data.story[locale];
   <script>
     import { addToCart, bindCartCountBadges } from "@/scripts/cart";
 
-    const qtyInput = document.querySelector<HTMLInputElement>("[data-item-qty]");
-    const decButton = document.querySelector<HTMLButtonElement>("[data-item-qty-dec]");
-    const incButton = document.querySelector<HTMLButtonElement>("[data-item-qty-inc]");
-    const addButton = document.querySelector<HTMLButtonElement>("[data-detail-add]");
+    const qtyInput =
+      document.querySelector<HTMLInputElement>("[data-item-qty]");
+    const decButton = document.querySelector<HTMLButtonElement>(
+      "[data-item-qty-dec]"
+    );
+    const incButton = document.querySelector<HTMLButtonElement>(
+      "[data-item-qty-inc]"
+    );
+    const addButton =
+      document.querySelector<HTMLButtonElement>("[data-detail-add]");
 
-    const normalizeQty = (value: number) => Math.max(1, Math.min(99, Math.floor(value)));
+    const normalizeQty = (value: number) =>
+      Math.max(1, Math.min(99, Math.floor(value)));
     const currentQty = () => normalizeQty(Number(qtyInput?.value ?? "1"));
 
     const setQty = (value: number) => {

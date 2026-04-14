@@ -5,16 +5,16 @@ import Footer from "@/components/layout/Footer.astro";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import WeChatDrawer from "@/components/wechat/WeChatDrawer.astro";
-import { LOCALES, type Locale } from "@/data/locales";
+import { isLocale, type Locale } from "@/data/locales";
 
 export const prerender = false;
 
 const localeParam = Astro.params.locale;
-if (!(localeParam && LOCALES.includes(localeParam as Locale))) {
-  throw new Error(`Invalid locale: ${localeParam}`);
+if (!isLocale(localeParam)) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
-const locale = localeParam as Locale;
+const locale: Locale = localeParam;
 const path = Astro.url.pathname;
 const isEn = locale === "en";
 ---
@@ -22,21 +22,27 @@ const isEn = locale === "en";
 <Layout
   locale={locale}
   title={`AMZ Sensory | ${isEn ? "Cart" : "購物車"}`}
-  description={isEn ? "Review cart items and submit checkout details." : "確認商品、調整數量並提交下單資訊。"}
+  description={isEn
+    ? "Review cart items and submit checkout details."
+    : "確認商品、調整數量並提交下單資訊。"}
 >
   <Header locale={locale} path={path} />
 
   <Section>
     <Container class="grid gap-10">
       <div class="grid gap-4">
-        <p class="text-xs tracking-[0.18em] uppercase text-muted">Checkout</p>
-        <h1 class="font-serif text-4xl tracking-[-0.02em]">{isEn ? "Cart" : "購物車"}</h1>
+        <p class="text-xs tracking-[0.18em] text-muted uppercase">Checkout</p>
+        <h1 class="font-serif text-4xl tracking-[-0.02em]">
+          {isEn ? "Cart" : "購物車"}
+        </h1>
       </div>
 
       <div class="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
         <div class="border border-border/15 bg-bg p-5 md:p-6">
           <div class="space-y-4" data-cart-items>
-            <p class="text-sm text-muted">{isEn ? "Your cart is empty." : "目前購物車是空的。"}</p>
+            <p class="text-sm text-muted">
+              {isEn ? "Your cart is empty." : "目前購物車是空的。"}
+            </p>
           </div>
         </div>
 
@@ -44,18 +50,24 @@ const isEn = locale === "en";
           <div class="border border-border/15 bg-bg p-5 md:p-6">
             <div class="flex items-center justify-between text-sm">
               <span class="text-muted">{isEn ? "Subtotal" : "小計"}</span>
-              <span class="text-text">HK$<span data-cart-subtotal>0</span></span>
+              <span class="text-text">HK$<span data-cart-subtotal>0</span></span
+              >
             </div>
             <p class="mt-3 text-xs text-muted">
-              {isEn
-                ? "Checkout form creates an order summary and QR guidance."
-                : "提交後會生成可複製訂單摘要與付款碼引導。"}
+              {
+                isEn
+                  ? "Checkout form creates an order summary and QR guidance."
+                  : "提交後會生成可複製訂單摘要與付款碼引導。"
+              }
             </p>
           </div>
 
-          <form class="grid gap-3 border border-border/15 bg-bg p-5 md:p-6" data-checkout-form>
+          <form
+            class="grid gap-3 border border-border/15 bg-bg p-5 md:p-6"
+            data-checkout-form
+          >
             <label class="grid gap-2">
-              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+              <span class="text-xs tracking-[0.12em] text-muted uppercase">
                 {isEn ? "Name" : "姓名"}
               </span>
               <input
@@ -67,19 +79,21 @@ const isEn = locale === "en";
             </label>
 
             <label class="grid gap-2">
-              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+              <span class="text-xs tracking-[0.12em] text-muted uppercase">
                 {isEn ? "Contact" : "聯絡方式"}
               </span>
               <input
                 name="contact"
                 required
                 class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
-                placeholder={isEn ? "Phone / WeChat / Email" : "電話 / WeChat / Email"}
+                placeholder={isEn
+                  ? "Phone / WeChat / Email"
+                  : "電話 / WeChat / Email"}
               />
             </label>
 
             <label class="grid gap-2">
-              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+              <span class="text-xs tracking-[0.12em] text-muted uppercase">
                 {isEn ? "Address" : "地址"}
               </span>
               <input
@@ -91,20 +105,19 @@ const isEn = locale === "en";
             </label>
 
             <label class="grid gap-2">
-              <span class="text-xs tracking-[0.12em] uppercase text-muted">
+              <span class="text-xs tracking-[0.12em] text-muted uppercase">
                 {isEn ? "Notes" : "備註"}
               </span>
               <textarea
                 name="notes"
                 rows="3"
                 class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
-                placeholder={isEn ? "Optional notes" : "可選備註"}
-              ></textarea>
+                placeholder={isEn ? "Optional notes" : "可選備註"}></textarea>
             </label>
 
             <button
               type="submit"
-              class="mt-2 border border-border/25 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/45"
+              class="mt-2 border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
             >
               {isEn ? "Generate Summary" : "生成訂單摘要"}
             </button>
@@ -119,10 +132,14 @@ const isEn = locale === "en";
     class="fixed inset-0 z-[90] hidden bg-bg/70 backdrop-blur-[4px]"
     aria-hidden="true"
   >
-    <div class="mx-auto flex min-h-full w-full max-w-container items-center justify-center px-4 sm:px-6 lg:px-10">
-      <div class="w-[min(92vw,560px)] rounded-[var(--radius)] border border-border/12 bg-bg p-5 text-text md:p-6">
+    <div
+      class="mx-auto flex min-h-full w-full max-w-container items-center justify-center px-4 sm:px-6 lg:px-10"
+    >
+      <div
+        class="w-[min(92vw,560px)] rounded-[var(--radius)] border border-border/12 bg-bg p-5 text-text md:p-6"
+      >
         <div class="mb-4 flex items-center justify-between">
-          <p class="text-xs tracking-[0.12em] uppercase text-muted">
+          <p class="text-xs tracking-[0.12em] text-muted uppercase">
             {isEn ? "Order Summary" : "訂單摘要"}
           </p>
           <button
@@ -133,11 +150,12 @@ const isEn = locale === "en";
             ×
           </button>
         </div>
-        <pre class="whitespace-pre-wrap text-xs text-text/90" data-order-text></pre>
+        <pre class="text-xs whitespace-pre-wrap text-text/90" data-order-text>
+        </pre>
         <div class="mt-4 flex justify-center">
           <button
             type="button"
-            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] uppercase text-text transition duration-150 ease-editorial hover:border-border/45"
+            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
             data-confirm-order
             data-wechat-open
           >
@@ -165,75 +183,107 @@ const isEn = locale === "en";
     const locale = isEnglish ? "en" : "zh-hant";
 
     const itemsHost = document.querySelector<HTMLElement>("[data-cart-items]");
-    const subtotalNodes = document.querySelectorAll<HTMLElement>("[data-cart-subtotal]");
-    const form = document.querySelector<HTMLFormElement>("[data-checkout-form]");
+    const subtotalNodes = document.querySelectorAll<HTMLElement>(
+      "[data-cart-subtotal]"
+    );
+    const form = document.querySelector<HTMLFormElement>(
+      "[data-checkout-form]"
+    );
     const dialog = document.querySelector<HTMLElement>("[data-order-dialog]");
     const orderText = document.querySelector<HTMLElement>("[data-order-text]");
-    const closeDialogBtn = document.querySelector<HTMLButtonElement>("[data-order-dialog-close]");
-    const confirmOrderBtn = document.querySelector<HTMLButtonElement>("[data-confirm-order]");
+    const closeDialogBtn = document.querySelector<HTMLButtonElement>(
+      "[data-order-dialog-close]"
+    );
+    const confirmOrderBtn = document.querySelector<HTMLButtonElement>(
+      "[data-confirm-order]"
+    );
 
     const render = (state: CartState) => {
       if (!itemsHost) return;
       const subtotal = getCartSubtotal(state);
       subtotalNodes.forEach(node => (node.textContent = String(subtotal)));
 
+      itemsHost.replaceChildren();
+
       if (state.items.length === 0) {
-        itemsHost.innerHTML = `<p class="text-sm text-muted">${
-          isEnglish ? "Your cart is empty." : "目前購物車是空的。"
-        }</p>`;
+        const empty = document.createElement("p");
+        empty.className = "text-sm text-muted";
+        empty.textContent = isEnglish
+          ? "Your cart is empty."
+          : "目前購物車是空的。";
+        itemsHost.append(empty);
         return;
       }
 
-      itemsHost.innerHTML = state.items
-        .map(
-          item => `
-            <div class="grid gap-3 border border-border/10 bg-bg p-3" data-item="${item.stable_key}">
-              <div class="flex items-start justify-between gap-3">
-                <a href="/${locale}/coffee/${item.slug}/" class="text-sm text-text hover:underline underline-offset-4">${item.title}</a>
-                <button type="button" class="text-xs text-muted hover:text-text" data-remove="${item.stable_key}">${isEnglish ? "Remove" : "刪除"}</button>
-              </div>
-              <div class="flex items-center justify-between text-xs text-muted">
-                <span>HK$${item.price_hkd} / 100g</span>
-                <div class="flex items-center gap-2">
-                  <button type="button" class="border border-border/20 bg-bg px-2 py-1 text-text" data-dec="${item.stable_key}">−</button>
-                  <span>${item.qty}</span>
-                  <button type="button" class="border border-border/20 bg-bg px-2 py-1 text-text" data-inc="${item.stable_key}">+</button>
-                </div>
-              </div>
-            </div>
-          `
-        )
-        .join("");
+      for (const item of state.items) {
+        const row = document.createElement("div");
+        row.className = "grid gap-3 border border-border/10 bg-bg p-3";
+        row.dataset.item = item.stable_key;
 
-      itemsHost.querySelectorAll<HTMLButtonElement>("[data-remove]").forEach(button => {
-        button.addEventListener("click", () => {
-          const key = button.dataset.remove;
-          if (key) removeFromCart(key);
+        const header = document.createElement("div");
+        header.className = "flex items-start justify-between gap-3";
+
+        const link = document.createElement("a");
+        link.href = `/${locale}/coffee/${encodeURIComponent(item.slug)}/`;
+        link.className = "text-sm text-text hover:underline underline-offset-4";
+        link.textContent = item.title;
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "text-xs text-muted hover:text-text";
+        removeButton.dataset.remove = item.stable_key;
+        removeButton.textContent = isEnglish ? "Remove" : "刪除";
+        removeButton.addEventListener("click", () => {
+          removeFromCart(item.stable_key);
         });
-      });
-      itemsHost.querySelectorAll<HTMLButtonElement>("[data-dec]").forEach(button => {
-        button.addEventListener("click", () => {
-          const key = button.dataset.dec;
-          if (!key) return;
-          const row = state.items.find(item => item.stable_key === key);
-          if (!row) return;
-          updateCartQty(key, row.qty - 1);
+
+        header.append(link, removeButton);
+
+        const controls = document.createElement("div");
+        controls.className =
+          "flex items-center justify-between text-xs text-muted";
+
+        const price = document.createElement("span");
+        price.textContent = `HK$${item.price_hkd} / 100g`;
+
+        const qtyControls = document.createElement("div");
+        qtyControls.className = "flex items-center gap-2";
+
+        const decButton = document.createElement("button");
+        decButton.type = "button";
+        decButton.className =
+          "border border-border/20 bg-bg px-2 py-1 text-text";
+        decButton.dataset.dec = item.stable_key;
+        decButton.textContent = "−";
+        decButton.addEventListener("click", () => {
+          updateCartQty(item.stable_key, item.qty - 1);
         });
-      });
-      itemsHost.querySelectorAll<HTMLButtonElement>("[data-inc]").forEach(button => {
-        button.addEventListener("click", () => {
-          const key = button.dataset.inc;
-          if (!key) return;
-          const row = state.items.find(item => item.stable_key === key);
-          if (!row) return;
-          updateCartQty(key, row.qty + 1);
+
+        const qty = document.createElement("span");
+        qty.textContent = String(item.qty);
+
+        const incButton = document.createElement("button");
+        incButton.type = "button";
+        incButton.className =
+          "border border-border/20 bg-bg px-2 py-1 text-text";
+        incButton.dataset.inc = item.stable_key;
+        incButton.textContent = "+";
+        incButton.addEventListener("click", () => {
+          updateCartQty(item.stable_key, item.qty + 1);
         });
-      });
+
+        qtyControls.append(decButton, qty, incButton);
+        controls.append(price, qtyControls);
+
+        row.append(header, controls);
+        itemsHost.append(row);
+      }
     };
 
     const buildOrderSummary = (state: CartState, formData: FormData) => {
       const lines = state.items.map(
-        item => `- ${item.title} × ${item.qty} = HK$${item.qty * item.price_hkd}`
+        item =>
+          `- ${item.title} × ${item.qty} = HK$${item.qty * item.price_hkd}`
       );
       const subtotal = getCartSubtotal(state);
       return [
@@ -262,7 +312,9 @@ const isEn = locale === "en";
       const contact = String(formData.get("contact") || "").trim();
       const address = String(formData.get("address") || "").trim();
       if (!name || !contact || !address) {
-        window.alert(isEnglish ? "Please fill required fields." : "請填寫必填欄位。");
+        window.alert(
+          isEnglish ? "Please fill required fields." : "請填寫必填欄位。"
+        );
         return;
       }
 

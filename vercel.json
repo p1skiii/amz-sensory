@@ -1,5 +1,5 @@
 {
   "framework": "astro",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm astro check && pnpm astro build && pnpm check:links"
+  "buildCommand": "pnpm build"
 }
