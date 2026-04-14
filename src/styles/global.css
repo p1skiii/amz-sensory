@@ -11,7 +11,9 @@
   --color-muted: rgb(var(--muted) / <alpha-value>);
   --color-border: rgb(var(--border) / <alpha-value>);
   --color-accent: rgb(var(--accent) / <alpha-value>);
-  --font-sans: "Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif";
+  --font-sans:
+    "Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI",
+    "Roboto", "sans-serif";
   --font-serif: "Fraunces", "ui-serif", "Georgia", "serif";
   --max-w-container: 1280px;
   --max-w-prose: 72ch;
@@ -58,6 +60,14 @@
     cursor: pointer;
   }
 
+  :where([class~="border"]) {
+    border-radius: calc(var(--radius) * 0.72);
+  }
+
+  :where(button, input, textarea, select) {
+    border-radius: calc(var(--radius) * 0.72);
+  }
+
   h1,
   h2,
   h3 {
@@ -99,5 +109,28 @@
 }
 
 .active-nav {
-  @apply underline decoration-1 decoration-border/40 underline-offset-8;
+  @apply underline decoration-border/40 decoration-1 underline-offset-8;
+}
+
+html[data-reveal-ready="true"] [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-distance, 28px), 0);
+  filter: blur(var(--reveal-blur, 1.4px));
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--reveal-duration, 760ms);
+  transition-timing-function: var(
+    --reveal-ease,
+    cubic-bezier(0.2, 0.8, 0.2, 1)
+  );
+  transition-delay: calc(
+    var(--reveal-delay, 0ms) + var(--reveal-step, 0) *
+      var(--reveal-stagger, 120ms)
+  );
+  will-change: opacity, transform, filter;
+}
+
+html[data-reveal-ready="true"] [data-reveal].is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
 }

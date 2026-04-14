@@ -13,7 +13,7 @@ const coffees = (await getAllCoffees()).slice(0, 4);
 <Section>
   <Container>
     <div class="flex items-center justify-between">
-      <div>
+      <div data-reveal data-reveal-step="0">
         <p class="text-xs tracking-[0.18em] text-muted uppercase">
           Current Releases
         </p>
@@ -21,19 +21,19 @@ const coffees = (await getAllCoffees()).slice(0, 4);
           {locale === "en" ? "Library Preview" : "作品預覽"}
         </h2>
       </div>
-      <a
-        href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"}
-        class="text-xs text-text underline-offset-4 hover:underline"
-      >
-        {locale === "en" ? "View all" : "全部"}
-      </a>
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16">
-      {coffees.map(coffee => <CoffeeCard coffee={coffee} locale={locale} />)}
+      {
+        coffees.map((coffee, index) => (
+          <div data-reveal data-reveal-step={index}>
+            <CoffeeCard coffee={coffee} locale={locale} showAddButton={false} />
+          </div>
+        ))
+      }
     </div>
 
-    <div class="mt-14 flex justify-center">
+    <div class="mt-14 flex justify-center" data-reveal data-reveal-step="4">
       <a
         href={locale === "en" ? "/en/coffee/" : "/zh-hant/coffee/"}
         class="inline-flex min-w-[180px] items-center justify-center rounded-full border border-text/75 px-7 py-2.5 font-serif text-[28px] tracking-[0.01em] text-text transition duration-150 ease-editorial hover:bg-text/5 md:min-w-[240px] md:px-8 md:py-3 md:text-[40px]"
@@ -43,9 +43,3 @@ const coffees = (await getAllCoffees()).slice(0, 4);
     </div>
   </Container>
 </Section>
-
-<script>
-  import { bindCartAddButtons } from "@/scripts/cart";
-
-  bindCartAddButtons();
-</script>

@@ -1,0 +1,333 @@
+---
+import type { Locale } from "@/data/locales";
+
+const { locale } = Astro.props as { locale: Locale | string };
+const isEn = locale === "en";
+---
+
+<div
+  data-cart-drawer-root
+  class="pointer-events-none fixed inset-0 z-[92] p-2 sm:p-3"
+  aria-hidden="true"
+>
+  <button
+    type="button"
+    class="absolute inset-0 bg-text/30 opacity-0 transition duration-200 ease-editorial"
+    aria-label={isEn ? "Close cart" : "關閉購物車"}
+    data-cart-drawer-backdrop
+  ></button>
+
+  <aside
+    class="absolute inset-y-0 right-0 flex h-full w-full max-w-[448px] translate-x-[108%] flex-col overflow-hidden rounded-[calc(var(--radius)*1.35)] border border-border/14 transition duration-300 ease-editorial"
+    data-cart-drawer-panel
+    role="dialog"
+    aria-modal="true"
+    aria-label={isEn ? "Shopping cart" : "購物車"}
+  >
+    <div class="flex items-center justify-between border-b border-border/10 px-5 py-4 md:px-6">
+      <h2 class="font-serif text-3xl tracking-[-0.02em] md:text-[2rem]">
+        {isEn ? "My Cart" : "購物車"}
+      </h2>
+      <button
+        type="button"
+        class="inline-flex h-11 w-11 items-center justify-center border border-border/20 text-3xl leading-none text-text transition duration-150 ease-editorial hover:border-border/35"
+        aria-label={isEn ? "Close cart" : "關閉購物車"}
+        data-cart-drawer-close
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4 md:px-6">
+      <div class="space-y-4" data-cart-drawer-items>
+        <p class="text-sm text-muted">
+          {isEn ? "Your cart is empty." : "目前購物車是空的。"}
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-border/10 px-5 py-5 md:px-6">
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-muted">{isEn ? "Subtotal" : "小計"}</span>
+        <span class="text-text">HK$<span data-cart-drawer-subtotal>0</span></span>
+      </div>
+
+      <a
+        href={`/${locale}/cart/`}
+        class="mt-4 inline-flex w-full items-center justify-center border border-border/25 px-4 py-2.5 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/40"
+        data-cart-drawer-checkout
+      >
+        {isEn ? "Proceed to Checkout" : "前往結帳"}
+      </a>
+    </div>
+  </aside>
+</div>
+
+<script>
+  import {
+    bindCartCountBadges,
+    getCartSubtotal,
+    readCart,
+    removeFromCart,
+    updateCartQty,
+    type CartState,
+  } from "@/scripts/cart";
+
+  type CartDrawerWindow = Window & {
+    __amzCartDrawerBound?: boolean;
+    __amzCartDrawerCleanup?: () => void;
+  };
+  const PANEL_HIDDEN_CLASS = "translate-x-[108%]";
+
+  const setupCartDrawer = (): boolean => {
+    const roots = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-cart-drawer-root]")
+    );
+    const root = roots.length > 0 ? roots[roots.length - 1] : null;
+    const panel =
+      root?.querySelector<HTMLElement>("[data-cart-drawer-panel]") ?? null;
+    const backdrop =
+      root?.querySelector<HTMLButtonElement>("[data-cart-drawer-backdrop]") ??
+      null;
+    const closeButton =
+      root?.querySelector<HTMLButtonElement>("[data-cart-drawer-close]") ?? null;
+    const checkoutLink =
+      root?.querySelector<HTMLAnchorElement>("[data-cart-drawer-checkout]") ??
+      null;
+    const itemsHost =
+      root?.querySelector<HTMLElement>("[data-cart-drawer-items]") ?? null;
+    const subtotalNode =
+      root?.querySelector<HTMLElement>("[data-cart-drawer-subtotal]") ?? null;
+
+    if (
+      !root ||
+      !panel ||
+      !backdrop ||
+      !closeButton ||
+      !checkoutLink ||
+      !itemsHost ||
+      !subtotalNode
+    ) {
+      return false;
+    }
+
+    const win = window as CartDrawerWindow;
+    win.__amzCartDrawerCleanup?.();
+
+    panel.style.backgroundColor = "rgb(var(--bg))";
+    checkoutLink.style.backgroundColor = "rgb(var(--surface))";
+
+    const isEnglish = document.documentElement.lang.toLowerCase().startsWith("en");
+    const locale = isEnglish ? "en" : "zh-hant";
+
+    const t = {
+      remove: isEnglish ? "Remove" : "刪除",
+      empty: isEnglish ? "Your cart is empty." : "目前購物車是空的。",
+      priceUnit: isEnglish ? "/ 100g" : "/ 100g",
+    };
+
+    let savedBodyOverflow = "";
+    let isOpen = false;
+
+    const closeDrawer = () => {
+      if (!isOpen) return;
+      isOpen = false;
+      panel.classList.add(PANEL_HIDDEN_CLASS);
+      backdrop.classList.add("opacity-0");
+      root.classList.add("pointer-events-none");
+      root.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = savedBodyOverflow;
+    };
+
+    const openDrawer = () => {
+      if (isOpen) return;
+      isOpen = true;
+      savedBodyOverflow = document.body.style.overflow;
+      root.classList.remove("pointer-events-none");
+      root.setAttribute("aria-hidden", "false");
+      panel.classList.remove(PANEL_HIDDEN_CLASS);
+      backdrop.classList.remove("opacity-0");
+      document.body.style.overflow = "hidden";
+      render(readCart());
+    };
+
+    const render = (state: CartState) => {
+      subtotalNode.textContent = String(getCartSubtotal(state));
+      itemsHost.replaceChildren();
+
+      if (state.items.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "text-sm text-muted";
+        empty.textContent = t.empty;
+        itemsHost.append(empty);
+        return;
+      }
+
+      for (const item of state.items) {
+        const row = document.createElement("div");
+        row.className =
+          "grid grid-cols-[84px_1fr] gap-3 rounded-[calc(var(--radius)*0.9)] border border-border/12 p-3";
+        row.style.backgroundColor = "rgb(var(--bg))";
+
+        const imageLink = document.createElement("a");
+        imageLink.href = `/${locale}/coffee/${encodeURIComponent(item.slug)}/`;
+        imageLink.className = "block rounded-[var(--radius)] bg-surface";
+
+        const imageWrap = document.createElement("div");
+        imageWrap.className =
+          "h-full w-full rounded-[calc(var(--radius)*0.9)] border border-border/15 p-2";
+        imageWrap.style.backgroundColor = "rgb(var(--surface))";
+
+        const image = document.createElement("img");
+        image.src = item.cover;
+        image.alt = item.title;
+        image.loading = "lazy";
+        image.className = "h-full w-full object-contain";
+        imageWrap.append(image);
+        imageLink.append(imageWrap);
+
+        const content = document.createElement("div");
+        content.className = "grid gap-2";
+
+        const header = document.createElement("div");
+        header.className = "flex items-start justify-between gap-3";
+
+        const titleLink = document.createElement("a");
+        titleLink.href = imageLink.href;
+        titleLink.className =
+          "text-sm text-text transition duration-150 ease-editorial hover:underline underline-offset-4";
+        titleLink.textContent = item.title;
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className =
+          "text-xs text-muted transition duration-150 ease-editorial hover:text-text";
+        removeButton.textContent = t.remove;
+        removeButton.addEventListener("click", () => {
+          removeFromCart(item.stable_key);
+        });
+
+        header.append(titleLink, removeButton);
+
+        const controls = document.createElement("div");
+        controls.className = "flex items-center justify-between gap-3 text-xs";
+
+        const price = document.createElement("span");
+        price.className = "text-muted";
+        price.textContent = `HK$${item.price_hkd} ${t.priceUnit}`;
+
+        const qtyControls = document.createElement("div");
+        qtyControls.className =
+          "flex items-center gap-2 rounded-full border border-border/18 px-2 py-1";
+        qtyControls.style.backgroundColor = "rgb(var(--surface))";
+
+        const decButton = document.createElement("button");
+        decButton.type = "button";
+        decButton.className =
+          "inline-flex h-6 w-6 items-center justify-center text-text";
+        decButton.textContent = "−";
+        decButton.addEventListener("click", () => {
+          updateCartQty(item.stable_key, item.qty - 1);
+        });
+
+        const qty = document.createElement("span");
+        qty.className = "min-w-[1.5rem] text-center text-text";
+        qty.textContent = String(item.qty);
+
+        const incButton = document.createElement("button");
+        incButton.type = "button";
+        incButton.className =
+          "inline-flex h-6 w-6 items-center justify-center text-text";
+        incButton.textContent = "+";
+        incButton.addEventListener("click", () => {
+          updateCartQty(item.stable_key, item.qty + 1);
+        });
+
+        qtyControls.append(decButton, qty, incButton);
+        controls.append(price, qtyControls);
+        content.append(header, controls);
+        row.append(imageLink, content);
+        itemsHost.append(row);
+      }
+    };
+
+    const handleDocumentClick = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      const trigger = target?.closest<HTMLElement>("[data-cart-drawer-open]");
+      if (!trigger) return;
+      event.preventDefault();
+      openDrawer();
+    };
+
+    const handleOpenEvent = () => {
+      openDrawer();
+    };
+
+    const handleCartChanged = (event: Event) => {
+      const custom = event as CustomEvent<CartState>;
+      render(custom.detail ?? readCart());
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDrawer();
+    };
+
+    const handleBackdropClick = () => {
+      closeDrawer();
+    };
+
+    const handleCloseClick = () => {
+      closeDrawer();
+    };
+
+    const handleCheckoutClick = () => {
+      closeDrawer();
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    window.addEventListener("amz-cart:open", handleOpenEvent);
+    window.addEventListener("amz-cart:changed", handleCartChanged);
+    window.addEventListener("keydown", handleEscape);
+    backdrop.addEventListener("click", handleBackdropClick);
+    closeButton.addEventListener("click", handleCloseClick);
+    checkoutLink.addEventListener("click", handleCheckoutClick);
+
+    bindCartCountBadges();
+    render(readCart());
+
+    win.__amzCartDrawerCleanup = () => {
+      document.removeEventListener("click", handleDocumentClick);
+      window.removeEventListener("amz-cart:open", handleOpenEvent);
+      window.removeEventListener("amz-cart:changed", handleCartChanged);
+      window.removeEventListener("keydown", handleEscape);
+      backdrop.removeEventListener("click", handleBackdropClick);
+      closeButton.removeEventListener("click", handleCloseClick);
+      checkoutLink.removeEventListener("click", handleCheckoutClick);
+      closeDrawer();
+    };
+
+    return true;
+  };
+
+  const runCartDrawerInit = () => {
+    if (setupCartDrawer()) return;
+    window.requestAnimationFrame(() => {
+      setupCartDrawer();
+    });
+  };
+
+  const win = window as CartDrawerWindow;
+  if (!win.__amzCartDrawerBound) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", runCartDrawerInit, {
+        once: true,
+      });
+    } else {
+      runCartDrawerInit();
+    }
+    document.addEventListener("astro:page-load", runCartDrawerInit);
+    win.__amzCartDrawerBound = true;
+  } else {
+    runCartDrawerInit();
+  }
+</script>

@@ -13,7 +13,12 @@ const t =
           b: "Less caramel weight — more air, more light.",
           href: "/en/philosophy/",
         },
-        { title: "A Roasting Method", a: "Layering through temperature bands.", b: "Every adjustment aims for a cleaner finish.", href: "/en/method/" },
+        {
+          title: "A Roasting Method",
+          a: "Layering through temperature bands.",
+          b: "Every adjustment aims for a cleaner finish.",
+          href: "/en/method/",
+        },
         {
           title: "Origins & Transparency",
           a: "Clear provenance. Long relationships.",
@@ -22,26 +27,51 @@ const t =
         },
       ]
     : [
-        { title: "審美先行", a: "不是更濃，而是更清。", b: "把多餘的糖感移開，讓花與果自己說話。", href: "/zh-hant/philosophy/" },
-        { title: "烘焙方法論", a: "用溫區分層做層次。", b: "每一次調整都為了更乾淨的尾韻。", href: "/zh-hant/method/" },
-        { title: "產地與透明", a: "來源清楚，關係長久。", b: "我們只講我們真正知道的。", href: "/zh-hant/origins/" },
+        {
+          title: "審美先行",
+          a: "不是更濃，而是更清。",
+          b: "把多餘的糖感移開，讓花與果自己說話。",
+          href: "/zh-hant/philosophy/",
+        },
+        {
+          title: "烘焙方法論",
+          a: "用溫區分層做層次。",
+          b: "每一次調整都為了更乾淨的尾韻。",
+          href: "/zh-hant/method/",
+        },
+        {
+          title: "產地與透明",
+          a: "來源清楚，關係長久。",
+          b: "我們只講我們真正知道的。",
+          href: "/zh-hant/origins/",
+        },
       ];
 ---
+
 <section class="py-24 md:py-32">
   <Container>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
-      {t.map((x, i) => (
-        <div class="group">
-          <p class="text-xs tracking-[0.18em] uppercase text-muted">{String(i + 1).padStart(2, "0")}</p>
-          <h2 class="mt-3 font-serif text-2xl tracking-[-0.01em]">{x.title}</h2>
-          <Divider class="my-5" />
-          <p class="text-sm text-text/90">{x.a}</p>
-          <p class="mt-3 text-sm text-muted">{x.b}</p>
-          <a href={x.href} class="mt-6 inline-block text-xs text-text hover:underline underline-offset-4">
-            {locale === "en" ? "Read" : "閱讀"}
-          </a>
-        </div>
-      ))}
+    <div class="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
+      {
+        t.map((x, i) => (
+          <div class="group" data-reveal data-reveal-step={i}>
+            <p class="text-xs tracking-[0.18em] text-muted uppercase">
+              {String(i + 1).padStart(2, "0")}
+            </p>
+            <h2 class="mt-3 font-serif text-2xl tracking-[-0.01em]">
+              {x.title}
+            </h2>
+            <Divider class="my-5" />
+            <p class="text-sm text-text/90">{x.a}</p>
+            <p class="mt-3 text-sm text-muted">{x.b}</p>
+            <a
+              href={x.href}
+              class="mt-6 inline-block text-xs text-text underline-offset-4 hover:underline"
+            >
+              {locale === "en" ? "Read" : "閱讀"}
+            </a>
+          </div>
+        ))
+      }
     </div>
   </Container>
 </section>

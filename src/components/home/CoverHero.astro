@@ -21,6 +21,7 @@ const copy =
       };
 
 const heroCover = "/covers/home-hero.jpg";
+const heroChars = Array.from(copy.h1);
 ---
 
 <section class="relative overflow-hidden">
@@ -46,8 +47,19 @@ const heroCover = "/covers/home-hero.jpg";
         </p>
         <h1
           class="mt-5 font-serif text-[42px] leading-[1.03] tracking-[-0.025em] text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)] md:text-[62px] md:leading-[1]"
+          data-hero-float-root
+          data-hero-float-key={`hero-title-${locale}`}
+          aria-label={copy.h1}
         >
-          {copy.h1}
+          <span class="hero-float-text" aria-hidden="true">
+            {
+              heroChars.map((char, index) => (
+                <span class="hero-float-char" data-float-index={index}>
+                  {char === " " ? "\u00A0" : char}
+                </span>
+              ))
+            }
+          </span>
         </h1>
         <p class="mt-5 text-xs tracking-[0.16em] text-white/80 uppercase">
           {copy.sub}
@@ -78,3 +90,199 @@ const heroCover = "/covers/home-hero.jpg";
     </Container>
   </div>
 </section>
+
+<style>
+  .hero-float-text {
+    display: inline-block;
+  }
+
+  .hero-float-char {
+    display: inline-block;
+    transform-origin: 50% 72%;
+    animation-name: hero-char-float;
+    animation-duration: var(--float-duration, 4200ms);
+    animation-delay: var(--float-delay, 0ms);
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+
+  @keyframes hero-char-float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    25% {
+      transform: translate3d(0, calc(var(--float-amp, 6px) * -1), 0)
+        rotate(var(--float-rot, 0.6deg));
+    }
+
+    50% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    75% {
+      transform: translate3d(0, calc(var(--float-amp, 6px) * 0.55), 0)
+        rotate(calc(var(--float-rot, 0.6deg) * -0.7));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-float-char {
+      animation: none;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const ROOT_SELECTOR = "[data-hero-float-root]";
+  const STORAGE_KEY = "amz-hero-float-v1";
+  const ANCHOR_KEY = "amz-hero-float-anchor-v1";
+
+  type CharProfile = {
+    amp: number;
+    rot: number;
+    duration: number;
+    phase: number;
+  };
+
+  type FloatStore = Record<
+    string,
+    {
+      length: number;
+      profiles: CharProfile[];
+    }
+  >;
+
+  const hasStorage = () => {
+    try {
+      return (
+        typeof window !== "undefined" && typeof localStorage !== "undefined"
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const readStore = (): FloatStore => {
+    if (!hasStorage()) return {};
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return typeof parsed === "object" && parsed ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const writeStore = (store: FloatStore) => {
+    if (!hasStorage()) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    } catch {
+      // ignore write failures
+    }
+  };
+
+  const createProfiles = (length: number): CharProfile[] =>
+    Array.from({ length }, () => ({
+      amp: 3.4 + Math.random() * 4.6,
+      rot: -0.9 + Math.random() * 1.8,
+      duration: 3300 + Math.random() * 2400,
+      phase: Math.random() * 5600,
+    }));
+
+  const isProfile = (value: unknown): value is CharProfile => {
+    if (!value || typeof value !== "object") return false;
+    const row = value as Partial<CharProfile>;
+    return (
+      typeof row.amp === "number" &&
+      Number.isFinite(row.amp) &&
+      typeof row.rot === "number" &&
+      Number.isFinite(row.rot) &&
+      typeof row.duration === "number" &&
+      Number.isFinite(row.duration) &&
+      row.duration > 0 &&
+      typeof row.phase === "number" &&
+      Number.isFinite(row.phase)
+    );
+  };
+
+  const getProfiles = (key: string, length: number): CharProfile[] => {
+    const store = readStore();
+    const cached = store[key];
+    const validCached =
+      cached &&
+      cached.length === length &&
+      Array.isArray(cached.profiles) &&
+      cached.profiles.length === length &&
+      cached.profiles.every(isProfile);
+
+    if (validCached) {
+      return cached.profiles;
+    }
+
+    const profiles = createProfiles(length);
+    store[key] = { length, profiles };
+    writeStore(store);
+    return profiles;
+  };
+
+  const getAnchor = (): number => {
+    const now = Date.now();
+    if (!hasStorage()) return now;
+
+    const existing = Number(localStorage.getItem(ANCHOR_KEY));
+    if (Number.isFinite(existing) && existing > 0) return existing;
+
+    localStorage.setItem(ANCHOR_KEY, String(now));
+    return now;
+  };
+
+  const applyHeroFloat = (root: HTMLElement) => {
+    const chars = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-float-index]")
+    );
+    if (chars.length < 1) return;
+
+    const key =
+      root.dataset.heroFloatKey && root.dataset.heroFloatKey.trim().length > 0
+        ? root.dataset.heroFloatKey
+        : "hero-title-default";
+
+    const profiles = getProfiles(key, chars.length);
+    const elapsed = Date.now() - getAnchor();
+
+    chars.forEach((char, index) => {
+      const profile = profiles[index];
+      const delay = -((elapsed + profile.phase) % profile.duration);
+
+      char.style.setProperty("--float-amp", `${profile.amp.toFixed(2)}px`);
+      char.style.setProperty("--float-rot", `${profile.rot.toFixed(3)}deg`);
+      char.style.setProperty(
+        "--float-duration",
+        `${Math.round(profile.duration)}ms`
+      );
+      char.style.setProperty("--float-delay", `${delay.toFixed(2)}ms`);
+    });
+  };
+
+  const initHeroFloat = () => {
+    document
+      .querySelectorAll<HTMLElement>(ROOT_SELECTOR)
+      .forEach(root => applyHeroFloat(root));
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initHeroFloat, {
+      once: true,
+    });
+  } else {
+    initHeroFloat();
+  }
+
+  document.addEventListener("astro:page-load", initHeroFloat);
+</script>

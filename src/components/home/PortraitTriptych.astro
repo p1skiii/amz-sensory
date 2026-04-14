@@ -10,19 +10,28 @@ const portraits =
     ? [
         {
           title: "Producer",
-          lines: ["He cares about ripeness and density.", "We buy only lots we truly understand."],
+          lines: [
+            "He cares about ripeness and density.",
+            "We buy only lots we truly understand.",
+          ],
           image: "/covers/ultra-light.jpg",
           objectPosition: "50% 60%",
         },
         {
           title: "Roasting",
-          lines: ["We care about temperature bands—not brute heat.", "Layers come from rhythm, not caramel weight."],
+          lines: [
+            "We care about temperature bands—not brute heat.",
+            "Layers come from rhythm, not caramel weight.",
+          ],
           image: "/covers/layered.jpg",
           objectPosition: "50% 56%",
         },
         {
           title: "Cupping",
-          lines: ["Clarity is the judge.", "Florals and fruit arrive first, but must stand firm."],
+          lines: [
+            "Clarity is the judge.",
+            "Florals and fruit arrive first, but must stand firm.",
+          ],
           image: "/covers/clean.jpg",
           objectPosition: "50% 58%",
         },
@@ -48,26 +57,31 @@ const portraits =
         },
       ];
 ---
+
 <Section>
-  <Container class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
-    {portraits.map(item => (
-      <div class="grid gap-4">
-        <Aspect>
-          <img
-            src={item.image}
-            alt={item.title}
-            class="h-full w-full object-cover"
-            style={`object-position:${item.objectPosition};`}
-            loading="lazy"
-          />
-        </Aspect>
-        <div class="grid gap-2">
-          <p class="text-xs tracking-[0.18em] uppercase text-muted">{item.title}</p>
-          {item.lines.map(line => (
-            <p class="text-sm text-text/90">{line}</p>
-          ))}
+  <Container class="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
+    {
+      portraits.map((item, index) => (
+        <div class="grid gap-4" data-reveal data-reveal-step={index}>
+          <Aspect>
+            <img
+              src={item.image}
+              alt={item.title}
+              class="h-full w-full object-cover"
+              style={`object-position:${item.objectPosition};`}
+              loading="lazy"
+            />
+          </Aspect>
+          <div class="grid gap-2">
+            <p class="text-xs tracking-[0.18em] text-muted uppercase">
+              {item.title}
+            </p>
+            {item.lines.map(line => (
+              <p class="text-sm text-text/90">{line}</p>
+            ))}
+          </div>
         </div>
-      </div>
-    ))}
+      ))
+    }
   </Container>
 </Section>

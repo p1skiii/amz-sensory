@@ -2,6 +2,7 @@
 import { ClientRouter } from "astro:transitions";
 import { PUBLIC_GOOGLE_SITE_VERIFICATION } from "astro:env/client";
 import { SITE } from "@/config";
+import CartDrawer from "@/components/cart/CartDrawer.astro";
 import "@/styles/global.css";
 
 type PageType = "website" | "article";
@@ -166,6 +167,7 @@ const structuredData =
   </head>
   <body>
     <slot />
+    <CartDrawer locale={locale} />
     <script src="../scripts/theme.ts"></script>
   </body>
 </html>

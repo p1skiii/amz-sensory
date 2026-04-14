@@ -6,9 +6,10 @@ import type { CoffeeEntry } from "@/utils/getCoffees";
 type Props = {
   coffee: CoffeeEntry;
   locale: Locale;
+  showAddButton?: boolean;
 };
 
-const { coffee, locale } = Astro.props as Props;
+const { coffee, locale, showAddButton = true } = Astro.props as Props;
 
 const href = `/${locale}/coffee/${coffee.data.slug}/`;
 const title = coffee.data.title[locale];
@@ -41,20 +42,24 @@ const price = `HK$${coffee.data.priceHkd} / 100g`;
       <p class="mt-3 text-sm text-text/85">{tasting}</p>
     </a>
 
-    <div class="mt-4 flex items-center gap-4 text-xs">
-      <button
-        type="button"
-        class="border border-border/20 px-3 py-1.5 text-text transition duration-150 ease-editorial hover:border-border/40"
-        data-cart-add
-        data-stable-key={coffee.data.stable_key}
-        data-slug={coffee.data.slug}
-        data-title={title}
-        data-price={coffee.data.priceHkd}
-        data-cover={coffee.data.cover}
-        data-added-label={locale === "en" ? "Added" : "已加入"}
-      >
-        {locale === "en" ? "Add to Cart" : "加入購物車"}
-      </button>
-    </div>
+    {
+      showAddButton && (
+        <div class="mt-4 flex items-center gap-4 text-xs">
+          <button
+            type="button"
+            class="rounded-[calc(var(--radius)*0.8)] border border-border/20 px-3 py-1.5 text-text transition duration-150 ease-editorial hover:border-border/40"
+            data-cart-add
+            data-stable-key={coffee.data.stable_key}
+            data-slug={coffee.data.slug}
+            data-title={title}
+            data-price={coffee.data.priceHkd}
+            data-cover={coffee.data.cover}
+            data-added-label={locale === "en" ? "Added" : "已加入"}
+          >
+            {locale === "en" ? "Add to Cart" : "加入購物車"}
+          </button>
+        </div>
+      )
+    }
   </div>
 </article>

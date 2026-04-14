@@ -38,7 +38,7 @@ const isEn = locale === "en";
       </div>
 
       <div class="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
-        <div class="border border-border/15 bg-bg p-5 md:p-6">
+        <div class="rounded-[calc(var(--radius)*1.12)] border border-border/15 bg-bg p-5 md:p-6">
           <div class="space-y-4" data-cart-items>
             <p class="text-sm text-muted">
               {isEn ? "Your cart is empty." : "目前購物車是空的。"}
@@ -47,7 +47,7 @@ const isEn = locale === "en";
         </div>
 
         <div class="grid gap-6">
-          <div class="border border-border/15 bg-bg p-5 md:p-6">
+          <div class="rounded-[calc(var(--radius)*1.12)] border border-border/15 bg-bg p-5 md:p-6">
             <div class="flex items-center justify-between text-sm">
               <span class="text-muted">{isEn ? "Subtotal" : "小計"}</span>
               <span class="text-text">HK$<span data-cart-subtotal>0</span></span
@@ -63,7 +63,7 @@ const isEn = locale === "en";
           </div>
 
           <form
-            class="grid gap-3 border border-border/15 bg-bg p-5 md:p-6"
+            class="grid gap-3 rounded-[calc(var(--radius)*1.12)] border border-border/15 bg-bg p-5 md:p-6"
             data-checkout-form
           >
             <label class="grid gap-2">
@@ -73,7 +73,7 @@ const isEn = locale === "en";
               <input
                 name="name"
                 required
-                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
+                class="rounded-[calc(var(--radius)*0.95)] border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn ? "Your name" : "請輸入姓名"}
               />
             </label>
@@ -85,7 +85,7 @@ const isEn = locale === "en";
               <input
                 name="contact"
                 required
-                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
+                class="rounded-[calc(var(--radius)*0.95)] border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn
                   ? "Phone / WeChat / Email"
                   : "電話 / WeChat / Email"}
@@ -99,7 +99,7 @@ const isEn = locale === "en";
               <input
                 name="address"
                 required
-                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
+                class="rounded-[calc(var(--radius)*0.95)] border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn ? "Delivery address" : "請輸入收件地址"}
               />
             </label>
@@ -111,13 +111,13 @@ const isEn = locale === "en";
               <textarea
                 name="notes"
                 rows="3"
-                class="border border-border/20 bg-bg px-3 py-2 text-sm text-text"
+                class="rounded-[calc(var(--radius)*0.95)] border border-border/20 bg-bg px-3 py-2 text-sm text-text"
                 placeholder={isEn ? "Optional notes" : "可選備註"}></textarea>
             </label>
 
             <button
               type="submit"
-              class="mt-2 border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
+              class="mt-2 rounded-[calc(var(--radius)*0.95)] border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
             >
               {isEn ? "Generate Summary" : "生成訂單摘要"}
             </button>
@@ -179,176 +179,235 @@ const isEn = locale === "en";
       type CartState,
     } from "@/scripts/cart";
 
-    const isEnglish = document.documentElement.lang === "en";
-    const locale = isEnglish ? "en" : "zh-hant";
-
-    const itemsHost = document.querySelector<HTMLElement>("[data-cart-items]");
-    const subtotalNodes = document.querySelectorAll<HTMLElement>(
-      "[data-cart-subtotal]"
-    );
-    const form = document.querySelector<HTMLFormElement>(
-      "[data-checkout-form]"
-    );
-    const dialog = document.querySelector<HTMLElement>("[data-order-dialog]");
-    const orderText = document.querySelector<HTMLElement>("[data-order-text]");
-    const closeDialogBtn = document.querySelector<HTMLButtonElement>(
-      "[data-order-dialog-close]"
-    );
-    const confirmOrderBtn = document.querySelector<HTMLButtonElement>(
-      "[data-confirm-order]"
-    );
-
-    const render = (state: CartState) => {
-      if (!itemsHost) return;
-      const subtotal = getCartSubtotal(state);
-      subtotalNodes.forEach(node => (node.textContent = String(subtotal)));
-
-      itemsHost.replaceChildren();
-
-      if (state.items.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "text-sm text-muted";
-        empty.textContent = isEnglish
-          ? "Your cart is empty."
-          : "目前購物車是空的。";
-        itemsHost.append(empty);
-        return;
-      }
-
-      for (const item of state.items) {
-        const row = document.createElement("div");
-        row.className = "grid gap-3 border border-border/10 bg-bg p-3";
-        row.dataset.item = item.stable_key;
-
-        const header = document.createElement("div");
-        header.className = "flex items-start justify-between gap-3";
-
-        const link = document.createElement("a");
-        link.href = `/${locale}/coffee/${encodeURIComponent(item.slug)}/`;
-        link.className = "text-sm text-text hover:underline underline-offset-4";
-        link.textContent = item.title;
-
-        const removeButton = document.createElement("button");
-        removeButton.type = "button";
-        removeButton.className = "text-xs text-muted hover:text-text";
-        removeButton.dataset.remove = item.stable_key;
-        removeButton.textContent = isEnglish ? "Remove" : "刪除";
-        removeButton.addEventListener("click", () => {
-          removeFromCart(item.stable_key);
-        });
-
-        header.append(link, removeButton);
-
-        const controls = document.createElement("div");
-        controls.className =
-          "flex items-center justify-between text-xs text-muted";
-
-        const price = document.createElement("span");
-        price.textContent = `HK$${item.price_hkd} / 100g`;
-
-        const qtyControls = document.createElement("div");
-        qtyControls.className = "flex items-center gap-2";
-
-        const decButton = document.createElement("button");
-        decButton.type = "button";
-        decButton.className =
-          "border border-border/20 bg-bg px-2 py-1 text-text";
-        decButton.dataset.dec = item.stable_key;
-        decButton.textContent = "−";
-        decButton.addEventListener("click", () => {
-          updateCartQty(item.stable_key, item.qty - 1);
-        });
-
-        const qty = document.createElement("span");
-        qty.textContent = String(item.qty);
-
-        const incButton = document.createElement("button");
-        incButton.type = "button";
-        incButton.className =
-          "border border-border/20 bg-bg px-2 py-1 text-text";
-        incButton.dataset.inc = item.stable_key;
-        incButton.textContent = "+";
-        incButton.addEventListener("click", () => {
-          updateCartQty(item.stable_key, item.qty + 1);
-        });
-
-        qtyControls.append(decButton, qty, incButton);
-        controls.append(price, qtyControls);
-
-        row.append(header, controls);
-        itemsHost.append(row);
-      }
+    type CartPageWindow = Window & {
+      __amzCartPageBound?: boolean;
+      __amzCartPageCleanup?: () => void;
     };
 
-    const buildOrderSummary = (state: CartState, formData: FormData) => {
-      const lines = state.items.map(
-        item =>
-          `- ${item.title} × ${item.qty} = HK$${item.qty * item.price_hkd}`
+    const hideDialog = (dialog: HTMLElement | null) => {
+      if (!dialog) return;
+      dialog.classList.add("hidden");
+      dialog.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    };
+
+    const setupCartPage = (): boolean => {
+      const form = document.querySelector<HTMLFormElement>(
+        "[data-checkout-form]"
       );
-      const subtotal = getCartSubtotal(state);
-      return [
-        isEnglish ? "AMZ Sensory Order" : "AMZ Sensory 訂單",
-        `Name: ${String(formData.get("name") || "")}`,
-        `Contact: ${String(formData.get("contact") || "")}`,
-        `Address: ${String(formData.get("address") || "")}`,
-        `Notes: ${String(formData.get("notes") || "")}`,
-        "",
-        ...(isEnglish ? ["Items:"] : ["商品："]),
-        ...lines,
-        "",
-        `${isEnglish ? "Subtotal" : "小計"}: HK$${subtotal}`,
-      ].join("\n");
-    };
+      const itemsHost =
+        document.querySelector<HTMLElement>("[data-cart-items]");
+      if (!form || !itemsHost) return false;
 
-    form?.addEventListener("submit", event => {
-      event.preventDefault();
-      const state = readCart();
-      if (state.items.length === 0) {
-        window.alert(isEnglish ? "Cart is empty." : "購物車是空的。");
-        return;
-      }
-      const formData = new FormData(form);
-      const name = String(formData.get("name") || "").trim();
-      const contact = String(formData.get("contact") || "").trim();
-      const address = String(formData.get("address") || "").trim();
-      if (!name || !contact || !address) {
-        window.alert(
-          isEnglish ? "Please fill required fields." : "請填寫必填欄位。"
+      const win = window as CartPageWindow;
+      win.__amzCartPageCleanup?.();
+
+      const isEnglish = document.documentElement.lang === "en";
+      const locale = isEnglish ? "en" : "zh-hant";
+      const subtotalNodes = document.querySelectorAll<HTMLElement>(
+        "[data-cart-subtotal]"
+      );
+      const dialog = document.querySelector<HTMLElement>("[data-order-dialog]");
+      const orderText =
+        document.querySelector<HTMLElement>("[data-order-text]");
+      const closeDialogBtn = document.querySelector<HTMLButtonElement>(
+        "[data-order-dialog-close]"
+      );
+      const confirmOrderBtn = document.querySelector<HTMLButtonElement>(
+        "[data-confirm-order]"
+      );
+
+      const render = (state: CartState) => {
+        const subtotal = getCartSubtotal(state);
+        subtotalNodes.forEach(node => (node.textContent = String(subtotal)));
+        itemsHost.replaceChildren();
+
+        if (state.items.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "text-sm text-muted";
+          empty.textContent = isEnglish
+            ? "Your cart is empty."
+            : "目前購物車是空的。";
+          itemsHost.append(empty);
+          return;
+        }
+
+        for (const item of state.items) {
+          const row = document.createElement("div");
+          row.className =
+            "grid grid-cols-[92px_1fr] gap-3 rounded-[calc(var(--radius)*0.9)] border border-border/12 bg-bg p-3";
+          row.dataset.item = item.stable_key;
+
+          const imageLink = document.createElement("a");
+          imageLink.href = `/${locale}/coffee/${encodeURIComponent(item.slug)}/`;
+          imageLink.className = "block rounded-[var(--radius)] bg-surface";
+
+          const imageWrap = document.createElement("div");
+          imageWrap.className =
+            "h-full w-full rounded-[calc(var(--radius)*0.92)] border border-border/15 bg-white/35 p-2";
+
+          const image = document.createElement("img");
+          image.src = item.cover;
+          image.alt = item.title;
+          image.loading = "lazy";
+          image.className = "h-full w-full object-contain";
+          imageWrap.append(image);
+          imageLink.append(imageWrap);
+
+          const content = document.createElement("div");
+          content.className = "grid gap-3";
+
+          const header = document.createElement("div");
+          header.className = "flex items-start justify-between gap-3";
+
+          const link = document.createElement("a");
+          link.href = `/${locale}/coffee/${encodeURIComponent(item.slug)}/`;
+          link.className =
+            "text-sm text-text hover:underline underline-offset-4";
+          link.textContent = item.title;
+
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.className = "text-xs text-muted hover:text-text";
+          removeButton.textContent = isEnglish ? "Remove" : "刪除";
+          removeButton.addEventListener("click", () => {
+            removeFromCart(item.stable_key);
+          });
+
+          header.append(link, removeButton);
+
+          const controls = document.createElement("div");
+          controls.className =
+            "flex items-center justify-between text-xs text-muted";
+
+          const price = document.createElement("span");
+          price.textContent = `HK$${item.price_hkd} / 100g`;
+
+          const qtyControls = document.createElement("div");
+          qtyControls.className =
+            "flex items-center gap-2 rounded-full border border-border/18 bg-bg/75 px-2 py-1";
+
+          const decButton = document.createElement("button");
+          decButton.type = "button";
+          decButton.className =
+            "inline-flex h-6 w-6 items-center justify-center text-text";
+          decButton.textContent = "−";
+          decButton.addEventListener("click", () => {
+            updateCartQty(item.stable_key, item.qty - 1);
+          });
+
+          const qty = document.createElement("span");
+          qty.className = "min-w-[1.5rem] text-center text-text";
+          qty.textContent = String(item.qty);
+
+          const incButton = document.createElement("button");
+          incButton.type = "button";
+          incButton.className =
+            "inline-flex h-6 w-6 items-center justify-center text-text";
+          incButton.textContent = "+";
+          incButton.addEventListener("click", () => {
+            updateCartQty(item.stable_key, item.qty + 1);
+          });
+
+          qtyControls.append(decButton, qty, incButton);
+          controls.append(price, qtyControls);
+          content.append(header, controls);
+          row.append(imageLink, content);
+          itemsHost.append(row);
+        }
+      };
+
+      const buildOrderSummary = (state: CartState, formData: FormData) => {
+        const lines = state.items.map(
+          item =>
+            `- ${item.title} × ${item.qty} = HK$${item.qty * item.price_hkd}`
         );
-        return;
-      }
+        const subtotal = getCartSubtotal(state);
+        return [
+          isEnglish ? "AMZ Sensory Order" : "AMZ Sensory 訂單",
+          `Name: ${String(formData.get("name") || "")}`,
+          `Contact: ${String(formData.get("contact") || "")}`,
+          `Address: ${String(formData.get("address") || "")}`,
+          `Notes: ${String(formData.get("notes") || "")}`,
+          "",
+          ...(isEnglish ? ["Items:"] : ["商品："]),
+          ...lines,
+          "",
+          `${isEnglish ? "Subtotal" : "小計"}: HK$${subtotal}`,
+        ].join("\n");
+      };
 
-      const summary = buildOrderSummary(state, formData);
-      if (dialog && orderText) {
+      const handleSubmit = (event: SubmitEvent) => {
+        event.preventDefault();
+        const state = readCart();
+        if (state.items.length === 0) {
+          window.alert(isEnglish ? "Cart is empty." : "購物車是空的。");
+          return;
+        }
+
+        const formData = new FormData(form);
+        const name = String(formData.get("name") || "").trim();
+        const contact = String(formData.get("contact") || "").trim();
+        const address = String(formData.get("address") || "").trim();
+        if (!name || !contact || !address) {
+          window.alert(
+            isEnglish ? "Please fill required fields." : "請填寫必填欄位。"
+          );
+          return;
+        }
+
+        const summary = buildOrderSummary(state, formData);
+        if (!dialog || !orderText) return;
         orderText.textContent = summary;
         dialog.classList.remove("hidden");
         dialog.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
+      };
+
+      const handleDialogClick = (event: MouseEvent) => {
+        if (event.target === dialog) hideDialog(dialog);
+      };
+
+      const refresh = () => render(readCart());
+
+      form.addEventListener("submit", handleSubmit);
+      closeDialogBtn?.addEventListener("click", () => hideDialog(dialog));
+      confirmOrderBtn?.addEventListener("click", () => hideDialog(dialog));
+      dialog?.addEventListener("click", handleDialogClick);
+      window.addEventListener("amz-cart:changed", refresh);
+
+      bindCartCountBadges();
+      refresh();
+
+      win.__amzCartPageCleanup = () => {
+        form.removeEventListener("submit", handleSubmit);
+        dialog?.removeEventListener("click", handleDialogClick);
+        window.removeEventListener("amz-cart:changed", refresh);
+      };
+
+      return true;
+    };
+
+    const runCartPageInit = () => {
+      if (setupCartPage()) return;
+      window.requestAnimationFrame(() => {
+        setupCartPage();
+      });
+    };
+
+    const win = window as CartPageWindow;
+    if (!win.__amzCartPageBound) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", runCartPageInit, {
+          once: true,
+        });
+      } else {
+        runCartPageInit();
       }
-    });
-
-    closeDialogBtn?.addEventListener("click", () => {
-      dialog?.classList.add("hidden");
-      dialog?.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    });
-
-    dialog?.addEventListener("click", event => {
-      if (event.target === dialog) {
-        dialog.classList.add("hidden");
-        dialog.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
-      }
-    });
-    confirmOrderBtn?.addEventListener("click", () => {
-      dialog?.classList.add("hidden");
-      dialog?.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    });
-
-    const refresh = () => render(readCart());
-    bindCartCountBadges();
-    refresh();
-    window.addEventListener("amz-cart:changed", refresh);
+      document.addEventListener("astro:page-load", runCartPageInit);
+      win.__amzCartPageBound = true;
+    } else {
+      runCartPageInit();
+    }
   </script>
 </Layout>

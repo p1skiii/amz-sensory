@@ -77,11 +77,16 @@ const sectionIndexes: Record<string, { label: string; href: string }[]> = {
     responsibilityIndex,
   [locale === "en" ? "/en/philosophy/" : "/zh-hant/philosophy/"]: philosophyIndex,
 };
+const coffeeSearchPlaceholder =
+  locale === "en" ? "Search coffee" : "搜尋作品";
+const coffeeSearchLabel = locale === "en" ? "Search coffee" : "搜尋作品";
 ---
 <header class="sticky top-0 z-50 w-full border-b border-border/10 bg-surface/90 backdrop-blur">
   <div class="border-b border-border/10 bg-surface/95">
-    <div class="mx-auto flex h-8 w-full max-w-[1280px] items-center justify-center px-4 text-[12px] tracking-[0.16em] uppercase text-muted sm:px-6 lg:px-8">
-      Floral First · Ultra Light · Structure / Light / Clean
+    <div class="mx-auto flex h-8 w-full max-w-[1280px] items-center justify-center px-3 sm:px-6 lg:px-8">
+      <p class="w-full truncate text-center text-[10px] leading-none tracking-[0.14em] text-muted uppercase sm:text-[12px] sm:tracking-[0.16em]">
+        Floral First · Ultra Light · Structure / Light / Clean
+      </p>
     </div>
   </div>
 
@@ -99,13 +104,25 @@ const sectionIndexes: Record<string, { label: string; href: string }[]> = {
       <img src="/brand/logo.svg" alt="AMZ Sensory" class="h-7 w-auto" />
     </a>
 
-    <a
-      href={`/${locale}/cart/`}
-      class="inline-flex items-center gap-1 text-xs tracking-[0.12em] uppercase text-text"
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-[calc(var(--radius)*0.95)] border border-border/20 text-text"
+      aria-label={locale === "en" ? "Open cart" : "開啟購物車"}
+      data-cart-drawer-open
     >
-      {locale === "en" ? "Cart" : "購物車"}
-      <span class="text-muted">(<span data-cart-count>0</span>)</span>
-    </a>
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        class="h-[18px] w-[18px]"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+      >
+        <circle cx="9" cy="20" r="1.1"></circle>
+        <circle cx="18" cy="20" r="1.1"></circle>
+        <path d="M3 4h2.2l2.1 10.2h10.6l2.2-7.2H6.4"></path>
+      </svg>
+    </button>
   </div>
 
   <div class="mx-auto hidden h-[72px] w-full max-w-[1280px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 md:grid lg:px-8">
@@ -307,14 +324,47 @@ const sectionIndexes: Record<string, { label: string; href: string }[]> = {
       <img src="/brand/logo.svg" alt="AMZ Sensory" class="h-8 w-auto" />
     </a>
 
-    <div class="flex w-full items-center justify-end justify-self-end gap-5">
+    <div class="flex w-full items-center justify-end justify-self-end gap-4">
+      <label class="relative hidden items-center md:flex">
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          class="pointer-events-none absolute left-2.5 h-[14px] w-[14px] text-muted"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+        >
+          <circle cx="11" cy="11" r="6"></circle>
+          <path d="M20 20l-3.6-3.6"></path>
+        </svg>
+        <input
+          type="search"
+          class="w-[184px] rounded-[calc(var(--radius)*0.95)] border border-border/15 bg-surface/65 py-1.5 pl-8 pr-3 text-xs text-text transition duration-150 ease-editorial placeholder:text-muted/70 focus:border-text/30 focus:outline-none"
+          placeholder={coffeeSearchPlaceholder}
+          aria-label={coffeeSearchLabel}
+          data-global-coffee-search
+        />
+      </label>
       <LangSwitch locale={locale} path={path} />
-      <a
-        href={`/${locale}/cart/`}
-        class="text-xs tracking-[0.12em] uppercase text-text hover:underline underline-offset-4"
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-[calc(var(--radius)*0.95)] border border-border/20 text-text transition duration-150 ease-editorial hover:border-border/40"
+        aria-label={locale === "en" ? "Open cart" : "開啟購物車"}
+        data-cart-drawer-open
       >
-        {locale === "en" ? "Cart" : "購物車"} (<span data-cart-count>0</span>)
-      </a>
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          class="h-[18px] w-[18px]"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="9" cy="20" r="1.1"></circle>
+          <circle cx="18" cy="20" r="1.1"></circle>
+          <path d="M3 4h2.2l2.1 10.2h10.6l2.2-7.2H6.4"></path>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -371,10 +421,27 @@ const sectionIndexes: Record<string, { label: string; href: string }[]> = {
         </div>
 
         <div class="mt-8 grid gap-4 border-t border-border/10 pt-6 text-sm text-muted">
+          <label class="relative mt-1 flex items-center">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              class="pointer-events-none absolute left-2.5 h-[14px] w-[14px] text-muted"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+            >
+              <circle cx="11" cy="11" r="6"></circle>
+              <path d="M20 20l-3.6-3.6"></path>
+            </svg>
+            <input
+              type="search"
+              class="w-full rounded-[calc(var(--radius)*0.95)] border border-border/15 bg-surface/65 py-2 pl-8 pr-3 text-sm text-text transition duration-150 ease-editorial placeholder:text-muted/70 focus:border-text/30 focus:outline-none"
+              placeholder={coffeeSearchPlaceholder}
+              aria-label={coffeeSearchLabel}
+              data-global-coffee-search
+            />
+          </label>
           <LangSwitch locale={locale} path={path} />
-          <a href={`/${locale}/cart/`} class="w-fit text-text hover:underline underline-offset-4">
-            {locale === "en" ? "Go to Cart" : "前往購物車"} (<span data-cart-count>0</span>)
-          </a>
         </div>
       </div>
     </div>
@@ -383,31 +450,143 @@ const sectionIndexes: Record<string, { label: string; href: string }[]> = {
   <script>
     import { bindCartCountBadges } from "@/scripts/cart";
 
-    const mobileDialog = document.querySelector<HTMLDialogElement>("#mobile-nav-dialog");
-    const openButton = document.querySelector<HTMLElement>("[data-mobile-nav-open]");
-    const closeButton = mobileDialog?.querySelector<HTMLElement>("[data-mobile-nav-close]");
-
-    const closeDialog = () => {
-      if (!mobileDialog?.open) return;
-      mobileDialog.close();
-      document.body.style.overflow = "";
+    type HeaderWindow = Window & {
+      __amzHeaderBound?: boolean;
+      __amzHeaderCleanup?: () => void;
     };
 
-    openButton?.addEventListener("click", () => {
-      mobileDialog?.showModal();
-      document.body.style.overflow = "hidden";
-    });
-    closeButton?.addEventListener("click", closeDialog);
-    mobileDialog?.addEventListener("click", event => {
-      if (event.target === mobileDialog) closeDialog();
-    });
-    mobileDialog?.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", closeDialog);
-    });
-    mobileDialog?.addEventListener("close", () => {
-      document.body.style.overflow = "";
-    });
+    const setupHeader = (): boolean => {
+      const mobileDialog =
+        document.querySelector<HTMLDialogElement>("#mobile-nav-dialog");
+      const openButton =
+        document.querySelector<HTMLElement>("[data-mobile-nav-open]");
+      const closeButton =
+        mobileDialog?.querySelector<HTMLElement>("[data-mobile-nav-close]");
 
-    bindCartCountBadges();
+      if (!mobileDialog || !openButton || !closeButton) {
+        bindCartCountBadges();
+        return false;
+      }
+
+      const win = window as HeaderWindow;
+      win.__amzHeaderCleanup?.();
+
+      const closeDialog = () => {
+        if (!mobileDialog.open) return;
+        mobileDialog.close();
+        document.body.style.overflow = "";
+      };
+
+      const handleOpen = () => {
+        mobileDialog.showModal();
+        document.body.style.overflow = "hidden";
+      };
+
+      const handleClose = () => {
+        closeDialog();
+      };
+
+      const handleDialogClick = (event: MouseEvent) => {
+        if (event.target === mobileDialog) closeDialog();
+      };
+
+      const handleDialogClosed = () => {
+        document.body.style.overflow = "";
+      };
+
+      const navLinks = Array.from(mobileDialog.querySelectorAll("a"));
+      const handleNavLinkClick = () => {
+        closeDialog();
+      };
+
+      const searchInputs = Array.from(
+        document.querySelectorAll<HTMLInputElement>("[data-global-coffee-search]")
+      );
+      const activeLocale = document.documentElement.lang
+        .toLowerCase()
+        .startsWith("en")
+        ? "en"
+        : "zh-hant";
+      const searchBasePath = `/${activeLocale}/coffee/`;
+      const queryFromUrl = new URL(window.location.href).searchParams.get("q") ?? "";
+      if (queryFromUrl.length > 0) {
+        searchInputs.forEach(input => {
+          input.value = queryFromUrl;
+        });
+      }
+
+      const handleSearchInput = (event: Event) => {
+        const source = event.currentTarget as HTMLInputElement;
+        const value = source.value;
+        searchInputs.forEach(input => {
+          if (input !== source) input.value = value;
+        });
+      };
+
+      const handleSearchKeydown = (event: KeyboardEvent) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+
+        const input = event.currentTarget as HTMLInputElement;
+        const keyword = input.value.trim();
+        const url = new URL(searchBasePath, window.location.origin);
+        if (keyword.length > 0) {
+          url.searchParams.set("q", keyword);
+        }
+        window.location.href = `${url.pathname}${url.search}`;
+      };
+
+      openButton.addEventListener("click", handleOpen);
+      closeButton.addEventListener("click", handleClose);
+      mobileDialog.addEventListener("click", handleDialogClick);
+      mobileDialog.addEventListener("close", handleDialogClosed);
+      navLinks.forEach(link => {
+        link.addEventListener("click", handleNavLinkClick);
+      });
+      searchInputs.forEach(input => {
+        input.addEventListener("input", handleSearchInput);
+        input.addEventListener("keydown", handleSearchKeydown);
+      });
+
+      bindCartCountBadges();
+
+      win.__amzHeaderCleanup = () => {
+        openButton.removeEventListener("click", handleOpen);
+        closeButton.removeEventListener("click", handleClose);
+        mobileDialog.removeEventListener("click", handleDialogClick);
+        mobileDialog.removeEventListener("close", handleDialogClosed);
+        navLinks.forEach(link => {
+          link.removeEventListener("click", handleNavLinkClick);
+        });
+        searchInputs.forEach(input => {
+          input.removeEventListener("input", handleSearchInput);
+          input.removeEventListener("keydown", handleSearchKeydown);
+        });
+      };
+
+      return true;
+    };
+
+    const runHeaderInit = () => {
+      if (setupHeader()) return;
+      window.requestAnimationFrame(() => {
+        setupHeader();
+      });
+    };
+
+    const win = window as HeaderWindow;
+    if (!win.__amzHeaderBound) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", runHeaderInit, {
+          once: true,
+        });
+      } else {
+        runHeaderInit();
+      }
+      document.addEventListener("astro:page-load", runHeaderInit);
+      win.__amzHeaderBound = true;
+    } else {
+      runHeaderInit();
+    }
   </script>
 </header>

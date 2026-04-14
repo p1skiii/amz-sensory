@@ -17,23 +17,40 @@ const content =
       }
     : {
         title: "我們的咖啡不是更濃，而是更清。",
-        lines: ["風土是前提，關係是證據。", "可持續不是口號，是一種節制。", "烘焙是把結構留住，把多餘移走。"],
+        lines: [
+          "風土是前提，關係是證據。",
+          "可持續不是口號，是一種節制。",
+          "烘焙是把結構留住，把多餘移走。",
+        ],
         imageAlt: "宣言",
       };
 ---
+
 <Section>
-  <Container class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-    <div class="space-y-4">
-      <p class="text-xs tracking-[0.18em] uppercase text-muted">Manifesto</p>
-      <h2 class="font-serif text-3xl tracking-[-0.02em] leading-tight">{content.title}</h2>
+  <Container
+    class="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-16"
+  >
+    <div class="space-y-4" data-reveal data-reveal-step="0">
+      <p class="text-xs tracking-[0.18em] text-muted uppercase">Manifesto</p>
+      <h2 class="font-serif text-3xl leading-tight tracking-[-0.02em]">
+        {content.title}
+      </h2>
       <div class="grid gap-3 text-sm text-text/90">
-        {content.lines.map(line => (
-          <p>{line}</p>
-        ))}
+        {content.lines.map(line => <p>{line}</p>)}
       </div>
     </div>
-    <div class="rounded-[var(--radius)] border border-border/10 overflow-hidden" style="aspect-ratio:4/5;">
-      <img src="/covers/manifesto-ultra-light.jpg" alt={content.imageAlt} class="h-full w-full object-cover" loading="lazy" />
+    <div
+      class="overflow-hidden rounded-[var(--radius)] border border-border/10"
+      style="aspect-ratio:4/5;"
+      data-reveal
+      data-reveal-step="1"
+    >
+      <img
+        src="/covers/manifesto-ultra-light.jpg"
+        alt={content.imageAlt}
+        class="h-full w-full object-cover"
+        loading="lazy"
+      />
     </div>
   </Container>
 </Section>

@@ -59,12 +59,8 @@ const story = coffee.data.story[locale];
       class="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-16"
     >
       <div>
-        <Aspect
-          class="rounded-[var(--radius)] border border-border/15 bg-surface p-4 md:p-5"
-        >
-          <div
-            class="h-full w-full rounded-[calc(var(--radius)-4px)] border border-border/10 bg-white/35 p-3"
-          >
+        <Aspect class="rounded-[var(--radius)] bg-surface">
+          <div class="h-full w-full rounded-[var(--radius)] border border-border/15 bg-white/35 p-3 md:p-4">
             <img
               src={coffee.data.cover}
               alt={title}
@@ -101,7 +97,7 @@ const story = coffee.data.story[locale];
           <div class="flex items-center gap-2 text-xs">
             <button
               type="button"
-              class="border border-border/20 px-2 py-1 transition duration-150 ease-editorial hover:border-border/40"
+              class="rounded-[calc(var(--radius)*0.72)] border border-border/20 px-2 py-1 transition duration-150 ease-editorial hover:border-border/40"
               data-item-qty-dec
             >
               −
@@ -111,12 +107,12 @@ const story = coffee.data.story[locale];
               min="1"
               max="99"
               value="1"
-              class="w-14 border border-border/20 px-2 py-1 text-center text-text"
+              class="w-14 rounded-[calc(var(--radius)*0.72)] border border-border/20 px-2 py-1 text-center text-text"
               data-item-qty
             />
             <button
               type="button"
-              class="border border-border/20 px-2 py-1 transition duration-150 ease-editorial hover:border-border/40"
+              class="rounded-[calc(var(--radius)*0.72)] border border-border/20 px-2 py-1 transition duration-150 ease-editorial hover:border-border/40"
               data-item-qty-inc
             >
               +
@@ -125,7 +121,7 @@ const story = coffee.data.story[locale];
 
           <button
             type="button"
-            class="w-fit border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
+            class="w-fit rounded-[calc(var(--radius)*0.8)] border border-border/25 px-4 py-2 text-xs tracking-[0.12em] text-text uppercase transition duration-150 ease-editorial hover:border-border/45"
             data-detail-add
             data-stable-key={coffee.data.stable_key}
             data-slug={coffee.data.slug}
@@ -145,12 +141,6 @@ const story = coffee.data.story[locale];
           >
             {locale === "en" ? "Back to Coffee" : "回到作品庫"}
           </a>
-          <a
-            href={`/${locale}/cart/`}
-            class="text-muted underline-offset-4 hover:text-text hover:underline"
-          >
-            {locale === "en" ? "Go to Cart" : "前往購物車"}
-          </a>
         </div>
       </div>
     </Container>
@@ -162,59 +152,128 @@ const story = coffee.data.story[locale];
   <script>
     import { addToCart, bindCartCountBadges } from "@/scripts/cart";
 
-    const qtyInput =
-      document.querySelector<HTMLInputElement>("[data-item-qty]");
-    const decButton = document.querySelector<HTMLButtonElement>(
-      "[data-item-qty-dec]"
-    );
-    const incButton = document.querySelector<HTMLButtonElement>(
-      "[data-item-qty-inc]"
-    );
-    const addButton =
-      document.querySelector<HTMLButtonElement>("[data-detail-add]");
-
-    const normalizeQty = (value: number) =>
-      Math.max(1, Math.min(99, Math.floor(value)));
-    const currentQty = () => normalizeQty(Number(qtyInput?.value ?? "1"));
-
-    const setQty = (value: number) => {
-      if (!qtyInput) return;
-      qtyInput.value = String(normalizeQty(value));
+    type CoffeeDetailWindow = Window & {
+      __amzCoffeeDetailBound?: boolean;
+      __amzCoffeeDetailCleanup?: () => void;
     };
 
-    decButton?.addEventListener("click", () => setQty(currentQty() - 1));
-    incButton?.addEventListener("click", () => setQty(currentQty() + 1));
-    qtyInput?.addEventListener("change", () => setQty(currentQty()));
+    const setupCoffeeDetail = (): boolean => {
+      const qtyInput =
+        document.querySelector<HTMLInputElement>("[data-item-qty]");
+      const decButton = document.querySelector<HTMLButtonElement>(
+        "[data-item-qty-dec]"
+      );
+      const incButton = document.querySelector<HTMLButtonElement>(
+        "[data-item-qty-inc]"
+      );
+      const addButton =
+        document.querySelector<HTMLButtonElement>("[data-detail-add]");
 
-    addButton?.addEventListener("click", () => {
-      const stableKey = addButton.dataset.stableKey;
-      const slug = addButton.dataset.slug;
-      const title = addButton.dataset.title;
-      const cover = addButton.dataset.cover;
-      const price = Number(addButton.dataset.price);
+      bindCartCountBadges();
 
-      if (!stableKey || !slug || !title || !cover || !Number.isFinite(price)) {
-        return;
+      if (!qtyInput || !decButton || !incButton || !addButton) {
+        return false;
       }
 
-      addToCart(
-        {
-          stable_key: stableKey,
-          slug,
-          title,
-          cover,
-          price_hkd: price,
-        },
-        currentQty()
-      );
+      const win = window as CoffeeDetailWindow;
+      win.__amzCoffeeDetailCleanup?.();
 
-      const previous = addButton.textContent;
-      addButton.textContent = addButton.dataset.addedLabel ?? "Added";
-      setTimeout(() => {
-        addButton.textContent = previous;
-      }, 900);
-    });
+      const normalizeQty = (value: number) =>
+        Math.max(1, Math.min(99, Math.floor(value)));
+      const currentQty = () => normalizeQty(Number(qtyInput.value ?? "1"));
 
-    bindCartCountBadges();
+      const setQty = (value: number) => {
+        qtyInput.value = String(normalizeQty(value));
+      };
+
+      let resetTimer = 0;
+
+      const handleDec = () => {
+        setQty(currentQty() - 1);
+      };
+      const handleInc = () => {
+        setQty(currentQty() + 1);
+      };
+      const handleQtyChange = () => {
+        setQty(currentQty());
+      };
+      const handleAdd = () => {
+        const stableKey = addButton.dataset.stableKey;
+        const slug = addButton.dataset.slug;
+        const title = addButton.dataset.title;
+        const cover = addButton.dataset.cover;
+        const price = Number(addButton.dataset.price);
+
+        if (
+          !stableKey ||
+          !slug ||
+          !title ||
+          !cover ||
+          !Number.isFinite(price) ||
+          price <= 0
+        ) {
+          return;
+        }
+
+        addToCart(
+          {
+            stable_key: stableKey,
+            slug,
+            title,
+            cover,
+            price_hkd: price,
+          },
+          currentQty()
+        );
+
+        const previous = addButton.textContent ?? "";
+        addButton.textContent = addButton.dataset.addedLabel ?? "Added";
+        if (resetTimer > 0) {
+          window.clearTimeout(resetTimer);
+        }
+        resetTimer = window.setTimeout(() => {
+          addButton.textContent = previous;
+        }, 900);
+      };
+
+      decButton.addEventListener("click", handleDec);
+      incButton.addEventListener("click", handleInc);
+      qtyInput.addEventListener("change", handleQtyChange);
+      addButton.addEventListener("click", handleAdd);
+
+      win.__amzCoffeeDetailCleanup = () => {
+        decButton.removeEventListener("click", handleDec);
+        incButton.removeEventListener("click", handleInc);
+        qtyInput.removeEventListener("change", handleQtyChange);
+        addButton.removeEventListener("click", handleAdd);
+        if (resetTimer > 0) {
+          window.clearTimeout(resetTimer);
+        }
+      };
+
+      return true;
+    };
+
+    const runCoffeeDetailInit = () => {
+      if (setupCoffeeDetail()) return;
+      window.requestAnimationFrame(() => {
+        setupCoffeeDetail();
+      });
+    };
+
+    const win = window as CoffeeDetailWindow;
+    if (!win.__amzCoffeeDetailBound) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", runCoffeeDetailInit, {
+          once: true,
+        });
+      } else {
+        runCoffeeDetailInit();
+      }
+      document.addEventListener("astro:page-load", runCoffeeDetailInit);
+      win.__amzCoffeeDetailBound = true;
+    } else {
+      runCoffeeDetailInit();
+    }
   </script>
 </Layout>
